@@ -43,126 +43,73 @@ proposal does not encompass type successors (i.e. `typeid(int).next()`),
 defining only a comparison on two known types. 
 (i.e. `typeid(int).before(typeid(char)))`)
 
+### Ordering Qualified Types
+
+For any unqualified type T, its qualified versions are ordered immediately
+after it (preceding any other type or its own qualified versions) in the 
+following manner:
+
+Qualifiers are each assigned a score
+
+> &: 1
+> &&: 2
+> const: 3
+> volatile: 6
+
+and ordering lowest-first after summing them.
+
+For any unqualified type `T`, the order of all possible qualified types would
+be:
+
+```cpp
+0  T
+1  T &
+2  T &&
+3  T const
+4  T const &
+5  T const &&
+6  T volatile
+7  T volatile &
+8  T volatile &&
+9  T const volatile
+10 T const volatile &
+11 T const volatile &&
+```
+
+The remainder of the paper concerns itself only with unqualified types.
+
 ### Ordering Native Types
 
-Providing an ordering for native types can be done in any arbitrary way.
+We order scalar types before any compound types; bult-in types first, followed 
+by user-defined types.
 
-We propose to order them as follows:
-```cpp
-// ------ Lowest ------
+built-in types with simple names must be ordered before any types that reference
+other types.
 
-void
-bool
-char
-char8_t
-wchar_t
-char16_t
-char32_t
-int
-float
-double
+In particular, scalar types should be ordered as follows:
 
-// ------ Highest ------
-```
+1. `void` comes first because it's not reifiable,
+2. `nullptr_t` as the first monostate
+3. (any other monostates, if we ever add them)
+4. `bool` as the first bi-state
+5. (any other bi-states, if we ever add them)
+6. Raw-memory types (`char`, `signed char`, `unsigned char`, std::byte)
+7. Integral types in order of size, signed before unsigned (`short`, `unsigned short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`, `unsigned long long`, followed by any implementation-defined wider integral types like __int128_t etc.). Intersperse any implementation-defined built-in integral types as needed between the above.
+8. Any remaining character types that are not type-aliases of any of the above, including unicode, according to the following rules: smallest first, unicode-specific variants after non-unicode variants.
+9. Floating-point types, in order of size; tie-breaks go in favor of `float`, `double` and `long double` (so types from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1467r9.html are after same-sized "regular" floating-point types)
+10. Enumeration types (internally ordered by rules for class type ordering by name)
+11. Function types (internally ordered by rules in section [function-types])
+12. Pointer types (internally ordered by their pointee-type)
+13. Pointer-to-member types (internally ordered by pointee-type)
 
-### Size Modifiers
+### Ordering Compound types:
 
-Size modifiers will order based on the least possible size of the equivalent 
-type. For example, the equivalent type of a `signed int` is just `int`.
+Array types will be ordered after scalar types but before class types. 
 
-The ordering of all `int` types would be: 
+Order arrays first internally by element type, then by rank, then by rank
+bounds, lowest first.
 
-```cpp
-// ------ Lowest ------
-
-short int
-int
-long int
-long long int
-
-// ------ Highest ------
-```
-
-### Signedness Modifiers
-
-Similarly we propose to order signedness modifiers.
-
-`unsigned` types will be ordered after `signed`:
-
-The order of `unsigned int` and `signed int` are
-```cpp
-// ------ Lowest ------
-
-signed int
-unsigned int
-
-// ------ Highest ------
-```
-
-Sort on size modifiers first, then sort on signedness.
-
-Combining these two orderings, the order of all possible integer types would be:
-```cpp
-// ------ Lowest ------
-
-short int
-unsigned short int
-int
-unsigned int
-long int
-unsigned long int
-long long int
-unsigned long long int
-
-// ------ Highest ------
-```
-
-It is worth noting that both signedness and size modifiers only exist on native
-types, and as such will only be taken into account when sorting user defined
-types. 
-
-### Ordering References and Pointers
-
-Pointers, lvalue references, and rvalue references should be ordered as 
-follows:
-
-```cpp
-// ------ Lowest ------
-using T = ...;
-
-T // unspecified
-T* // Pointer
-T& // lvalue Reference
-T&& // rvalue Reference
-
-// ------ Highest ------
-```
-
-### Type Qualifiers
-
-`const`, `volatile` and `mutable` qualifiers should be ordered as follows:
-
-Volatile modifiers would be ordered with `unspecified < volatile`.
-
-Constantness modifiers would be ordered: `unspecified < const < mutable`
-
-Order first based on volatileness, then on constantness.
-
-For example:
-
-```cpp
-// ------ Lowest ------
-
-using T = ...;
-
-T
-const T
-mutable T
-const volatile T
-mutable volatile T
-
-// ------ Highest ------
-```
+Class types will be ordered according to the rules below.
 
 ### Non Templated User Defined Types
 
@@ -214,42 +161,13 @@ namespace bar {
 
 The order of the two structs w/ type `i` types would be `bar::i < foo::i`
 
-Combining the above, we can define an order for every possible combination of
-type, qualifier, and pointer/reference. 
-
-1. Order alphabetically by namespace and type. Native types come before user defined types.
-2. Order by pointer or reference. 
-3. Order by type qualifier.
-
-### Type Aliases 
-
-The ordering of type aliases is to be the same as the type they are aliased to.
-
-For example, the order of the following `<cstdint>` type aliases would be:
-
-```cpp
-// ------ Lowest ------
-
-int8_t // signed char
-uint8_t // unsigned char
-int16_t // signed short int
-uint16_t // unsigned short int
-int32_t // long int
-uint32_t // unsigned long int
-int64_t // long long int
-uint64_t // unsigned long long int
-
-// ------ Highest ------
-```
-
 ## Non-Templated User Defined Functions
 
 User Defined function types will be ordered by 
 
 1. Name (alphabetically)
-2. Return type, ordered as described above
-3. Number of parameters
-4. Order of parameters. Applied left to right and ordered as described above.
+2. Number of parameters
+3. Order of parameters. Applied left to right and ordered as described above.
 
 ```cpp
 void foo(int i);
@@ -297,6 +215,11 @@ void foo(Banana, Banana);
 
 Gives us the ordering
 `void foo(Apple, Apple) < void foo(Apple, Banana) < void foo(Banana, Apple) < void foo(Banana, Banana)`
+
+### Type Aliases 
+
+Type aliases are not types, and we need not concern ourselves with them in this
+paper.
 
 ## Lambdas
 
