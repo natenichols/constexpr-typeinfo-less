@@ -109,40 +109,18 @@ Array types will be ordered after scalar types but before class types.
 Order arrays first internally by element type, then by rank, then by rank
 bounds, lowest first.
 
-Class types will be ordered according to the rules below.
-
-### Non Templated User Defined Types
-
-Simple User Defined Types can be defines as either a `struct` or a `class` that
-has been declared without a template parameter. As far as ordering is concerned,
-structs and classes should be treated the same.
-
-User defined types will be greater than native types.
-
-Ordering these is simple, since we cannot redeclare two types with the same
-name, we'll just order simple user defined types alphabetically. 
+So the order of the following, for a given type T:
 
 ```cpp
-struct Apple {};
-class Banana {};
-struct Carrot {};
-
+T[10]
+T[11]
+T[10][2]
+T[3][2]
 ```
 
-Would be ordered as `Apple < Banana < Carrot`.
+would be ordered `T[10] < T[11] < T[3][2] < T[10][2]`
 
-References and pointers to, as well as type qualifiers on, will behave the same
-way on user defined types as they do on native types. For example, given:
-
-```cpp
-Apple
-Carrot
-Apple&
-Banana const&
-Carrot&&
-```
-
-Would be ordered `Apple < Apple& < Banana const&  < Carrot < Carrot&&`
+Class types will be ordered according to the rules below, see [ordering-classes]
 
 ### namespaces
 
@@ -161,6 +139,83 @@ namespace bar {
 
 The order of the two structs w/ type `i` types would be `bar::i < foo::i`
 
+### Non Templated User Defined Types
+
+Simple User Defined Types can be defines as either a `struct` or a `class` that
+has been declared without a template parameter. As far as ordering is concerned,
+structs and classes should be treated the same.
+
+User defined types will be greater than native types.
+
+Ordering these is simple, since we cannot redeclare two types with the same
+name, we'll just order simple user defined types alphabetically. 
+
+```cpp
+struct Apple {};
+class Banana {};
+struct Carrot {};
+```
+
+Would be ordered as `Apple < Banana < Carrot`
+
+# Value Ordering
+Values can be used to create template specializations. Take, for example:
+
+```cpp
+template <int N>
+class Foo;
+....
+Foo<1>;
+Foo<2>;
+```
+
+To account for this, we must define an order for value. Values will be ordered
+first by their types, then by their individual values.
+
+so in the case of 
+```cpp
+Foo<1>
+Foo<2>
+```
+
+`Foo<1> < Foo<2>`
+
+## Ordering Templated Classes
+
+Lets start with the simple, non-recursive case. Templated classes are ordered
+by;
+1. Class name, alphabetically
+2. Order of template arguments applied left to right.
+
+For example, given:
+```cpp
+template <typename T, typename U>
+struct Apple;
+
+struct Banana;
+struct Carrot;
+
+Apple<Banana, Carrot>;
+Apple<Banana, Banana>;
+Apple<Carrot, Carrot>;
+```
+
+would be ordered `Apple<Banana, Carrot> < Apple<Banana, Banana> < Apple<Carrot, Carrot>`.
+
+The same rules apply for recursive templates:
+
+For example, given:
+```cpp
+template <typename T>
+struct Foo;
+
+Foo<int>;
+Foo<Foo<int>>;
+```
+
+would be ordered `Foo<int> < Foo<Foo<int>>`, because `int` and `Foo<int>` 
+template arguments are compared, and `int < Foo<int>`.
+
 ## Non-Templated User Defined Functions
 
 User Defined function types will be ordered by 
@@ -175,13 +230,6 @@ void bar(int i);
 ```
 
 First, order by name, so `void bar(int) < void foo(int)`
-
-```cpp
-void foo(int);
-int foo(int);
-```
-
-Because next priority is to order by return type, `void foo(int) < int bar(int)`
 
 ```cpp
 void foo(int)
@@ -216,13 +264,27 @@ void foo(Banana, Banana);
 Gives us the ordering
 `void foo(Apple, Apple) < void foo(Apple, Banana) < void foo(Banana, Apple) < void foo(Banana, Banana)`
 
-### Type Aliases 
+### Non-Templated Type Aliases 
 
-Type aliases are not types, and we need not concern ourselves with them in this
-paper.
+Non-Templated type aliases are not types, and we don't need to concern ourselves
+with how we order them. 
+
+They will be ordered exactly the same as the type they are aliased to.
+
+### Non-Templated Type Aliases 
+
 
 ## Lambdas
 
 ## Templates
 
 ## Anonymous namespace
+
+
+class templates (internally ordered recursively, see [template-ordering]
+
+TOOO:
+<!-- variable templates (proposed as template parameters / arguments)
+concepts (proposed as template parameters / arguments)
+universal template parameters (find example where this stays in the type)
+packs of the above, ordered by kind as above -->
