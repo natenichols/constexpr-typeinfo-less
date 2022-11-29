@@ -139,6 +139,10 @@ namespace bar {
 
 The order of the two structs w/ type `i` types would be `bar::i < foo::i`
 
+### anonymous namespace
+The anonymous namespace will be ordered after the global namespace but before
+any user namespaces.
+
 ### Non Templated User Defined Types
 
 Simple User Defined Types can be defines as either a `struct` or a `class` that
@@ -179,6 +183,27 @@ Foo<2>
 ```
 
 `Foo<1> < Foo<2>`
+
+When ordering types with value template arguments, `typeinfo` will use the 
+`operator<=>`
+
+Values without `operator<=>` cannot be compared, and will cause a compilation 
+error. An example of this would be 
+
+```cpp
+struct Foo {
+  int i;
+  // Notice, no way to order two Foos
+  constexpr Foo(int i_) : i{i_} {};
+  
+  friend auto operator<(Foo const& lhs, Foo const& rhs) -> bool = delete;
+};
+
+template <Foo T>
+struct Bar {
+    int j = T.i;
+};
+```
 
 ## Ordering Templated Classes
 
@@ -271,20 +296,67 @@ with how we order them.
 
 They will be ordered exactly the same as the type they are aliased to.
 
-### Non-Templated Type Aliases 
+### Templated Type Aliases 
 
+Templated type aliases will be treated exactly like templated classes. 
+
+```cpp
+template <typename T>
+using Foo = SomeTemplatedType<T>;
+```
+
+Will be ordered exactly the same way as `SomeTemplatedType<T>`
 
 ## Lambdas
 
-## Templates
+Lambdas will be ordered first in the namespace in which they are declared, in 
+declaration order.
 
-## Anonymous namespace
+```cpp
+namespace Banana {
+ auto i = [](){};
+}
 
+namespace Apple {
+auto i = [](){};
+auto j = [](){};
+}
+```
 
-class templates (internally ordered recursively, see [template-ordering]
+would be ordered:
+
+`decltype(Apple::i)` < `decltype(Apple::j)` < `decltype(Banana::i)`
+
+## Concepts
+
+Concepts do not need to be ordered, since they are not types, only restrict what
+types can be.
+
+## Parameter Packs
+
+Parameter packs are ordered by size first, then types compared left to right.
+
+Given:
+
+```cpp
+template<class... Types>
+struct Tuple {};
+
+class Foo {};
+class Bar {};
+
+Tuple<> t0;
+Tuple<int> t1;
+Tuple<Foo> t2;
+Tuple<Bar> t3;
+Tuple<Foo, Bar> t4;
+```
+
+would be ordered:
+`Tuple<>` < `Tuple<int>` < `Tuple<Bar>` < `Tuple<Foo>` < `Tuple<Foo, Bar>`
+
 
 TOOO:
-<!-- variable templates (proposed as template parameters / arguments)
-concepts (proposed as template parameters / arguments)
+<!--
 universal template parameters (find example where this stays in the type)
 packs of the above, ordered by kind as above -->
