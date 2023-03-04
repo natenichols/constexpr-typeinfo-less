@@ -131,6 +131,7 @@ highest.
 
 - scalar types
 - *
+- []
 - [n]
 - kinds
 - names of class, function, or alias
