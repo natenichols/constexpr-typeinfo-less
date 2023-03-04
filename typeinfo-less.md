@@ -125,13 +125,15 @@ follows from lowest to highest.
 - alias template
 
 #### List of atoms
+
+The following are atoms of ordering tuples. They shall be ordered from lowest to
+highest.
+
 - scalar types
-- kinds
-- names of classes
-- names of functions
-- names of aliases
 - *
 - [n]
+- kinds
+- names of class, function, or alias
 - rank{n}
 - ...
 
