@@ -355,9 +355,9 @@ They shall be ordered exactly the same as the type they are aliased to.
 ```cpp
 template <typename T>
 using Foo = SomeType<T>;
-``` -->
+```
 
-Foo shall be ordered exactly the same way as `SomeType<T>`
+Foo shall be ordered exactly the same way as `SomeType<T>` -->
 
 ## Lambda Types
 
