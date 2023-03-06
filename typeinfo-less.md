@@ -117,12 +117,14 @@ follows from lowest to highest.
 
 - value
 - namespace
+- function
+- member_function
+- function_template
+- lambda_function
 - type
-- parameter
-- class template
-- function template
-- value template
-- alias template
+- class_template
+- variable_template
+- alias_template
 
 #### List of atoms
 
@@ -130,13 +132,13 @@ The following are atoms of ordering tuples. They shall be ordered from lowest to
 highest.
 
 - scalar types
-- *
-- []
-- [n]
-- kinds
-- names of class, function, or alias
-- rank{n}
-- ...
+- * (pointer)
+- [] (unknown bound array)
+- [n] (known bound array of size n)
+- kinds (see [kinds])
+- name of class
+- ... (variadic parameter)
+- rank{n} (maybe)
 
 ### namespaces
 
@@ -227,7 +229,7 @@ defining `OrderingTuple`s
 
 ### Ordering Compound Types:
 
-### Class Types
+### Ordering Class Types
 
 Class types can be defined as either a `struct` or a `class`. As far as 
 ordering is concerned, structs and classes should be treated the same.
@@ -251,55 +253,15 @@ As such, we define the ordering tuples:
 `(type, Banana)`
 `(type, Carrot)`
 
-<!-- # Value Ordering (TODO)
-Values can be used to create template specializations. Take, for example:
+# Non Type Template Parameters
 
-```cpp
-template <int N>
-class Foo;
-....
-Foo<1>;
-Foo<2>;
-```
-
-To account for this, we must define an order for values. Values shall be ordered
-first by their types, then by their individual values.
-
-so in the case of 
-```cpp
-Foo<1>
-Foo<2>
-```
-
-`Foo<1> < Foo<2>`
-
-When ordering types with value template arguments, `typeinfo` shall use the 
-`operator<=>`
-
-Values without `operator<=>` cannot be compared, and shall be considered 
-ill-formed. An example of this would be 
-
-```cpp
-struct Foo {
-  int i;
-  // Notice, no way to order two Foos
-  constexpr Foo(int i_) : i{i_} {};
-  
-  friend auto operator<(Foo const& lhs, Foo const& rhs) -> bool = delete;
-};
-
-template <Foo T>
-struct Bar {
-    int j = T.i;
-};
-``` -->
+NTTPs are lexicographically ordered by their scalar subobjects. 
 
 ## Class Templates
 
 Lets start with the simple case. Class templates are ordered by:
 1. Class name, alphabetically
-2. Number of template arguments.
-3. Order of template arguments applied left to right.
+2. Template arguments, applied lexicographically.
 
 For example, given:
 ```cpp
@@ -317,84 +279,71 @@ Apple<Carrot, Carrot>;
 would be ordered `Apple<Banana, Banana> < Apple<Banana, Carrot> < Apple<Carrot, Carrot>`.
 
 We can represent this with tuples:
-`(type, Apple, (class_template, Banana), (class_template, Carrot))`
+`(class_template, Apple, Banana, Carrot)`
+`(class_template, Apple, Banana, Banana)`
+`(class_template, Apple, Carrot, Carrot)`
 
-## Function Types
+### Function Types
 
 Function types shall be ordered by 
 
-1. Name (alphabetically)
-2. Lexicographically, applied left to right and ordered as described above.
+1. Return type
+2. Parameters, lexicographically.
 
 ```cpp
 void foo(int i);
-void bar(int i);
 ```
 
-First, order by name, so `void bar(int) < void foo(int)`
-
-These functions can be represented by:
-`(type, foo, (parameter, (type, int)))`
-`(type, bar, (parameter, (type, int)))`
+This function can be represented by:
+`(function, (type, void), (type, int))`
 
 ```cpp
 void foo(int)
 void foo(int, double)
 ```
 
-Next, order by number of parameters, so `void foo(int) < void foo(int, double)`
+We can represent these types with 
+`(function, (type, void), (type, int))`
+`(function, (type, void), (type, int), (type, double))`
+
+So, the type of `void foo(int)` would precede the type of `void foo(int, double)`
+
+### Member Function Types
+
+Function types shall be ordered by 
+
+1. Return type
+2. The type of the class it is a member of.
+3. Parameters, lexicographically.
 
 ```cpp
-struct Apple {};
-struct Banana {};
-
-void foo(Apple);
-void foo(Banana);
+struct Foo {
+  void bar(int i, float j);
+};
 ```
 
-Finally, order each parameter left to right as described above, so 
-`void foo(Apple) < void foo(Banana)`
-
-Left to right meaning the order of the following:
-
-```cpp
-struct Apple {};
-struct Banana {};
-
-void foo(Apple, Apple);
-void foo(Apple, Banana);
-void foo(Banana, Apple);
-void foo(Banana, Banana);
-```
-
-Gives us the ordering
-`void foo(Apple, Apple) < void foo(Apple, Banana) < void foo(Banana, Apple) < void foo(Banana, Banana)`
-
-### Template Specializations
-Template specializations shall be orded in the same way as class templates. First
-by name, then by the length of the argument list, compared as a tuple of
-arguments.
+Produces the following tuple representation
+`(member_function, (type, void), (type, Foo), (type, int), (type, float))`
 
 ### Variadic Function Types
 
 Variadic function shall be ordered in a similar way. In a variadic function, the
-last argument is a variadic argument. A variadic argument shall be ordered after
-all possible qualified types of its underlying type.
+last argument is a variadic argument. A variadic argument shall be ordered 
+immediately after its underlying type.
 
 Given:
 
 ```cpp
-void foo(int);
-void foo(float, int);
-void foo(int, float);
-void foo(float, int...);
-void foo(int, float...);
+void foo(Foo);
+void foo(Foo...);
 ```
 
-According to [ordering-qualified-types], int is ordered before float, so
-`foo(int) < foo(int, float) < foo(int, float...) < foo(float, int) < foo(float, int...)`
+### Function Template Types
 
-### Type Aliases 
+In this case, the type of `void foo(Foo...)` is ordered immediately after
+the type of `void foo(Foo)`.
+
+<!-- ### Type Aliases TODO
 
 Type aliases are not types, and we don't need to concern ourselves
 with how we order them. 
@@ -406,39 +355,36 @@ They shall be ordered exactly the same as the type they are aliased to.
 ```cpp
 template <typename T>
 using Foo = SomeType<T>;
-```
+``` -->
 
 Foo shall be ordered exactly the same way as `SomeType<T>`
 
 ## Lambda Types
 
-Lambda Types shall be ordered in the namespace in which they are declared. Ties
+Lambda Types shall be ordered in the same manner as functions. Ties
 are broken by the point of instantiation.
 
 
 ```cpp
 namespace Banana {
- auto i = [](){};
+ auto i = [](int) -> void {}; // 0th lambda instantiated in Banana
 }
 
 namespace Apple {
-auto i = [](){};
-auto j = [](){};
+auto i = [](float) -> int {}; // 0th lambda instantiated in Apple
+auto j = []() -> std::string {}; // 1st lambda instantiated in Apple
 }
 ```
+≈
 
-would be ordered:
-
-`decltype(Apple::i)` < `decltype(Apple::j)` < `decltype(Banana::i)`
-
-## Concepts
-
-Concepts do not need to be ordered, since they are not types, only restrict what
-types can be.
+These would produce the following tuples:
+`((namespace Banana), (lambda, (type, void), (type, int), (value, 0))`
+`((namespace Apple), (lambda, (type, int), (type, float), (value, 0))`
+`((namespace Apple), (lambda, (type, std::string), (value, 0))`
 
 ## Parameter Packs
 
-Parameter packs are ordered by size first, then types compared left to right.
+Parameter are ordered as class templates.
 
 Given:
 
@@ -483,69 +429,7 @@ These are represented by tuples:
 `(type, one, (class_template, (type, zero, (class_template, int))))`
 `(type, two, (class_template, (type, one, (class_template, rank{1}))))`
 
-### Class Templates
+# Acknowledgements
 
-```cpp
-namespace foo {
-namespace bar {
-
-template <typename Template1, typename Template2>
-class Apple
-{
-public:
-  Apple(std::string) {}
-
-  static void do_prepare(int i, std::function<void(float)> const &cb) {
-
-  }
-
-  std::vector<Template1> _member;
-};
-
-using apple_t = Apple<std::string, std::vector<char>>;
-
-apple_t apple;
-
-} // namespace bar
-} //namespace foo
-```
-
-Everything resides in namespace foo and bar, so lets start there
-
-`((namespace, foo), (namespace, bar))`. 
-
-What all has a type in the above?
-- `Apple<string, vector<char>>`
-- `Apple<string, vector<char>>::Apple`
-- `Apple<string, vector<char>>::member_`
-
-Lets look at the type tuples generated
-`apple_t` would be
-```
-(
-  (namespace, foo), 
-  (namespace, bar), 
-  (type, Apple, 
-    (class_template, (type, std::string)), 
-    (class_template, (type, vector, (class_template, (type, char)))))
-)
-```
-
-`Apple<string, vector<char>>::Apple` would be
-```
-(
-  (namespace, foo), 
-  (namespace, bar), 
-  (type, Apple, 
-    (class_template, (type, string)), 
-    (class_template, (type, vector, (class_template, (type, char))))),
-  (type, Apple,
-    (parameter, (type, string)))
-)`
-```
-
-`decltype(Apple<string, vector<char>>::_member)` would be
-(
-  (type, vector, (class_template, (type, string)))
-)`
-```
+Thanks to all of the following:
+  - Davis Herring for his suggestions on ordering non-type template parameters.
