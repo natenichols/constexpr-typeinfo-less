@@ -124,7 +124,6 @@ follows from lowest to highest.
 - type
 - class_template
 - variable_template
-- alias_template
 
 #### List of atoms
 
@@ -279,9 +278,9 @@ Apple<Carrot, Carrot>;
 would be ordered `Apple<Banana, Banana> < Apple<Banana, Carrot> < Apple<Carrot, Carrot>`.
 
 We can represent this with tuples:
-`(class_template, Apple, Banana, Carrot)`
-`(class_template, Apple, Banana, Banana)`
-`(class_template, Apple, Carrot, Carrot)`
+`(class_template, Apple, (type, Banana), (type, Carrot))`
+`(class_template, Apple, (type, Banana), (type, Banana))`
+`(class_template, Apple, (type, Carrot), (type, Carrot))`
 
 ### Function Types
 
@@ -336,34 +335,36 @@ Given:
 ```cpp
 void foo(Foo);
 void foo(Foo...);
+
 ```
-
-### Function Template Types
-
 In this case, the type of `void foo(Foo...)` is ordered immediately after
 the type of `void foo(Foo)`.
 
-<!-- ### Type Aliases TODO
+We can represent these as:
+`(function (type, void) (type, Foo))`
+`(function (type, void) (type, Foo...))`
 
-Type aliases are not types, and we don't need to concern ourselves
-with how we order them. 
+### Function Template Types
 
-They shall be ordered exactly the same as the type they are aliased to.
+Function templates are ordered after member functions. They shall be ordered:
+1) By return type
+2) By template parameters, lexicographically
+3) By function parameters, lexicographically
 
-### Type Alias Templates
+Given 
 
 ```cpp
-template <typename T>
-using Foo = SomeType<T>;
+template <typename T, typename U>
+T f(U);
 ```
 
-Foo shall be ordered exactly the same way as `SomeType<T>` -->
+The type of `f<char, int>` would produce the representation:
+`(function_template, (type, int), ((type, char), (type, int)), (type, double))`
 
 ## Lambda Types
 
 Lambda Types shall be ordered in the same manner as functions. Ties
 are broken by the point of instantiation.
-
 
 ```cpp
 namespace Banana {
@@ -380,7 +381,7 @@ auto j = []() -> std::string {}; // 1st lambda instantiated in Apple
 These would produce the following tuples:
 `((namespace Banana), (lambda, (type, void), (type, int), (value, 0))`
 `((namespace Apple), (lambda, (type, int), (type, float), (value, 0))`
-`((namespace Apple), (lambda, (type, std::string), (value, 0))`
+`((namespace Apple), (lambda, (type, std::string), (value, 1))`
 
 ## Parameter Packs
 
@@ -428,6 +429,18 @@ These are represented by tuples:
 `(type, zero, (class_template, int))`
 `(type, one, (class_template, (type, zero, (class_template, int))))`
 `(type, two, (class_template, (type, one, (class_template, rank{1}))))`
+
+## Variable Templates
+
+Variable templates are ordered by the type of their template parameters.
+
+```cpp
+template <typename T>
+constexpr T pi = T(3.1415);
+```
+
+the type of pi<int> can be represented as:
+`(variable_template, (type, int))`
 
 # Acknowledgements
 

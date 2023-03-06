@@ -191,7 +191,6 @@ follows from lowest to highest.</p>
 <li>type</li>
 <li>class_template</li>
 <li>variable_template</li>
-<li>alias_template</li>
 </ul>
 <h4 data-number="4.1.3.1" id="list-of-atoms"><span class="header-section-number">4.1.3.1</span> List of atoms<a href="#list-of-atoms" class="self-link"></a></h4>
 <p>The following are atoms of ordering tuples. They shall be ordered
@@ -311,9 +310,9 @@ lexicographically.</p>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
 <p>would be ordered <code class="sourceCode default">Apple&lt;Banana, Banana&gt; &lt; Apple&lt;Banana, Carrot&gt; &lt; Apple&lt;Carrot, Carrot&gt;</code>.</p>
-<p>We can represent this with tuples: <code class="sourceCode default">(class_template, Apple, Banana, Carrot)</code>
-<code class="sourceCode default">(class_template, Apple, Banana, Banana)</code>
-<code class="sourceCode default">(class_template, Apple, Carrot, Carrot)</code></p>
+<p>We can represent this with tuples: <code class="sourceCode default">(class_template, Apple, (type, Banana), (type, Carrot))</code>
+<code class="sourceCode default">(class_template, Apple, (type, Banana), (type, Banana))</code>
+<code class="sourceCode default">(class_template, Apple, (type, Carrot), (type, Carrot))</code></p>
 <h3 data-number="5.1.1" id="function-types"><span class="header-section-number">5.1.1</span> Function Types<a href="#function-types" class="self-link"></a></h3>
 <p>Function types shall be ordered by</p>
 <ol type="1">
@@ -347,55 +346,51 @@ shall be ordered immediately after its underlying type.</p>
 <p>Given:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">)</span>;</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">...)</span>;</span></code></pre></div>
-<h3 data-number="5.1.4" id="function-template-types"><span class="header-section-number">5.1.4</span> Function Template Types<a href="#function-template-types" class="self-link"></a></h3>
 <p>In this case, the type of
 <code class="sourceCode default">void foo(Foo...)</code> is ordered
 immediately after the type of
 <code class="sourceCode default">void foo(Foo)</code>.</p>
-<!-- ### Type Aliases TODO
-
-Type aliases are not types, and we don't need to concern ourselves
-with how we order them. 
-
-They shall be ordered exactly the same as the type they are aliased to.
-
-### Type Alias Templates
-
-```cpp
-template <typename T>
-using Foo = SomeType<T>;
-``` -->
-<p>Foo shall be ordered exactly the same way as
-<code class="sourceCode default">SomeType&lt;T&gt;</code></p>
+<p>We can represent these as: <code class="sourceCode default">(function (type, void) (type, Foo))</code>
+<code class="sourceCode default">(function (type, void) (type, Foo...))</code></p>
+<h3 data-number="5.1.4" id="function-template-types"><span class="header-section-number">5.1.4</span> Function Template Types<a href="#function-template-types" class="self-link"></a></h3>
+<p>Function templates are ordered after member functions. They shall be
+ordered: 1) By return type 2) By template parameters, lexicographically
+3) By function parameters, lexicographically</p>
+<p>Given</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>T f<span class="op">(</span>U<span class="op">)</span>;</span></code></pre></div>
+<p>The type of
+<code class="sourceCode default">f&lt;char, int&gt;</code> would produce
+the representation: <code class="sourceCode default">(function_template, (type, int), ((type, char), (type, int)), (type, double))</code></p>
 <h2 data-number="5.2" id="lambda-types"><span class="header-section-number">5.2</span> Lambda Types<a href="#lambda-types" class="self-link"></a></h2>
 <p>Lambda Types shall be ordered in the same manner as functions. Ties
 are broken by the point of instantiation.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Banana <span class="op">{</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">int</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">void</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Banana</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Apple <span class="op">{</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">float</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">int</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Apple</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> j <span class="op">=</span> <span class="op">[]()</span> <span class="op">-&gt;</span> std<span class="op">::</span>string <span class="op">{}</span>; <span class="co">// 1st lambda instantiated in Apple</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Banana <span class="op">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">int</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">void</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Banana</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Apple <span class="op">{</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">float</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">int</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Apple</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> j <span class="op">=</span> <span class="op">[]()</span> <span class="op">-&gt;</span> std<span class="op">::</span>string <span class="op">{}</span>; <span class="co">// 1st lambda instantiated in Apple</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>≈</p>
 <p>These would produce the following tuples: <code class="sourceCode default">((namespace Banana), (lambda, (type, void), (type, int), (value, 0))</code>
 <code class="sourceCode default">((namespace Apple), (lambda, (type, int), (type, float), (value, 0))</code>
-<code class="sourceCode default">((namespace Apple), (lambda, (type, std::string), (value, 0))</code></p>
+<code class="sourceCode default">((namespace Apple), (lambda, (type, std::string), (value, 1))</code></p>
 <h2 data-number="5.3" id="parameter-packs"><span class="header-section-number">5.3</span> Parameter Packs<a href="#parameter-packs" class="self-link"></a></h2>
 <p>Parameter are ordered as class templates.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span><span class="op">...</span> Types<span class="op">&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Tuple <span class="op">{}</span>;</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">{}</span>;</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Bar <span class="op">{}</span>;</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;&gt;</span> t0;</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> t1;</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo<span class="op">&gt;</span> t2;</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Bar<span class="op">&gt;</span> t3;</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo, Bar<span class="op">&gt;</span> t4;</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span><span class="op">...</span> Types<span class="op">&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Tuple <span class="op">{}</span>;</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">{}</span>;</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Bar <span class="op">{}</span>;</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;&gt;</span> t0;</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> t1;</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo<span class="op">&gt;</span> t2;</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Bar<span class="op">&gt;</span> t3;</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo, Bar<span class="op">&gt;</span> t4;</span></code></pre></div>
 <p>would be ordered:
 <code class="sourceCode default">Tuple&lt;&gt;</code> &lt;
 <code class="sourceCode default">Tuple&lt;int&gt;</code> &lt;
@@ -405,19 +400,26 @@ are broken by the point of instantiation.</p>
 <h2 data-number="5.4" id="kinds-of-templates"><span class="header-section-number">5.4</span> Kinds of Templates<a href="#kinds-of-templates" class="self-link"></a></h2>
 <p>Kinds of templates shall first be ordered by arity.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span><span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">class</span> Template<span class="op">&gt;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> two<span class="op">{}</span>;</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">struct</span> one<span class="op">{}</span>;</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">struct</span> zero<span class="op">{}</span>;</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>zero<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> value0;</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>one<span class="op">&lt;</span>zero<span class="op">&gt;</span> value1;</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>two<span class="op">&lt;</span>one<span class="op">&gt;</span> value2;</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span><span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">class</span> Template<span class="op">&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> two<span class="op">{}</span>;</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">struct</span> one<span class="op">{}</span>;</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">struct</span> zero<span class="op">{}</span>;</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>zero<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> value0;</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>one<span class="op">&lt;</span>zero<span class="op">&gt;</span> value1;</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>two<span class="op">&lt;</span>one<span class="op">&gt;</span> value2;</span></code></pre></div>
 <p>These are represented by tuples: <code class="sourceCode default">(type, zero, (class_template, int))</code>
 <code class="sourceCode default">(type, one, (class_template, (type, zero, (class_template, int))))</code>
 <code class="sourceCode default">(type, two, (class_template, (type, one, (class_template, rank{1}))))</code></p>
+<h2 data-number="5.5" id="variable-templates"><span class="header-section-number">5.5</span> Variable Templates<a href="#variable-templates" class="self-link"></a></h2>
+<p>Variable templates are ordered by the type of their template
+parameters.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> T pi <span class="op">=</span> T<span class="op">(</span><span class="fl">3.1415</span><span class="op">)</span>;</span></code></pre></div>
+<p>the type of pi<int> can be represented as:
+<code class="sourceCode default">(variable_template, (type, int))</code></p>
 <h1 data-number="6" id="acknowledgements"><span class="header-section-number">6</span> Acknowledgements<a href="#acknowledgements" class="self-link"></a></h1>
 <p>Thanks to all of the following: - Davis Herring for his suggestions
 on ordering non-type template parameters.</p>
