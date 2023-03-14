@@ -1,6 +1,6 @@
 ---
 title: Standardized Type Ordering
-document: D2830R0
+document: P2830R0
 date: 2022-10-29
 audience: EWG
 author:
@@ -379,8 +379,8 @@ The type of `f<char, int>` would produce the representation:
 
 ### Lambdas
 
-Lambda types shall be ordered in the same manner as functions. Ties
-are broken by the point of instantiation.
+Lambda objects are ordered first by where they are declared, then by declaration
+order. 
 
 ```cpp
 namespace Banana {
@@ -395,11 +395,11 @@ auto j = []() -> std::string {}; // 1st lambda instantiated in Apple
 
 These would produce the following tuples:
 
-`((namespace Banana), (lambda, (type, void), (type, int), (value, 0))`
+`((namespace Banana), (lambda, (value, 0))`
 
-`((namespace Apple), (lambda, (type, int), (type, float), (value, 0))`
+`((namespace Apple), (lambda, (value, 0))`
 
-`((namespace Apple), (lambda, (type, std::string), (value, 1))`
+`((namespace Apple), (lambda, (value, 1))`
 
 ### Parameter Packs
 
@@ -475,16 +475,14 @@ using remove_cvref_t = typename remove_cvref<T>::type;
 ```
 
 We can represent `remove_cvref_t` as:
-`(alias_template, remove_cvref_t)`
 
-# Examples
+`(alias_template, remove_cvref_t)`
 
 # Acknowledgements
 
 Thanks to all of the following:
 
   - Davis Herring for his suggestions on ordering non-type template parameters.
-
 
 ---
 references:
