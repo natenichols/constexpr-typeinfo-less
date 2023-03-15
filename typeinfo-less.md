@@ -310,12 +310,11 @@ In particular, scalar types shall be ordered as follows:
 
 Class types shall be ordered according to the rules below, see [Ordering Compound Types]
 
-
 ## Ordering Array Types
 
 Array types shall be ordered after scalar types but before class types.
 
-The `sort_key(T[]) = (sort_key(T), [])`  and the `sort_key(T[n]) = (sort_key(T), [n])`.
+The `sort_key(T[]) = ([], sort_key(T))`  and the `sort_key(T[n]) = ([n], sort_key(T))`.
 
 The intention is to order arrays first internally by element type, then by
 rank, then by rank bounds, lowest first. Arrays of unknown bounds come before
@@ -332,23 +331,11 @@ T[10][2]
 T[3][2]
 ```
 
-shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`,
+shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`, and
 
-This can be represented as:
+`sort_key(T[0]) = ([], (type, T, ))`
 
-`((type, T, ), [], )`
-
-`((type, T, ), [10], )`
-
-`((type, T, ), [11], )`
-
-`(((type, T, ), [2], ), [], )`
-
-`(((type, T, ), [2], ), [10], )`
-
-`(((type, T, ), [2], ), [2], )`
-
-TODO: should we put the bounds first as an array signifier intead?
+`sort_key(T[10][2]) = ([2], sort_key(T[10])) = ([2], ([10], (type, T, ))`
 
 ## Ordering Compound Types
 
