@@ -166,7 +166,8 @@ void f(T x = []{ return T{0}; }());
 //           ^^^^^^^^^^^^^^^^^^ this one
 ```
 
-The _key-tuple_ for `f<int>` is `((function, f, (type, int)), (type, int), (type, (lambda, 0))`.
+The _key-tuple for `f<int>` is 
+<!-- The _key-tuple_ for `f<int>` is `((function, f, (type, int)), (type, void), (type, (lambda, 0))`. -->
 
 Note: because of the regular structure of _key-tuples_, such anonymous classes
 will compare greater than any entity that has a simple identifier, due to
@@ -333,9 +334,9 @@ T[3][2]
 
 shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`, and
 
-`sort_key(T[0]) = ([], (type, T, ))`
+`sort_key(T[0]) = (type, ([], (type, T, )))`
 
-`sort_key(T[10][2]) = ([2], sort_key(T[10])) = ([2], ([10], (type, T, ))`
+`sort_key(T[10][2]) = (type, ([2], sort_key(T[10]))) = (type, ([2], ([10], (type, T, )))`
 
 ## Ordering Compound Types
 
@@ -354,11 +355,13 @@ struct Carrot {};
 
 Would be ordered as `Apple < Banana < Carrot`
 
-As such, we define the ordering tuples:
+As such, we define sort key as:
 
-`(type, Apple, )`
-`(type, Banana, )`
-`(type, Carrot, )`
+`sort_key(Apple) = (type, Apple, )`
+
+`sort_key(Banana) = (type, Banana, )`
+
+`sort_key(Carrot) = (type, Carrot, )`
 
 ### Non Type Template Parameters
 
@@ -374,6 +377,11 @@ struct s {
 s<1u> a;
 s<1.0f> b;
 ```
+
+`sort_key(s<1u>) = ((type, (s, sort_key(1u))))`
+
+We can define sort_key of `1u` as:
+`sort_key(1u) = ( sort_key(delctype(1u)), 1)`
 
 `s<1u>` shall be ordered before `s<1.0f>`, as integral types come before
 floating point types.
@@ -403,15 +411,16 @@ Apple<Banana, Banana>;
 Apple<Carrot, Carrot>;
 ```
 
-would be ordered `Apple<Banana, Banana> < Apple<Banana, Carrot> < Apple<Carrot, Carrot>`.
+`sort_key(Apple<Banana, Carrot> = (class_template, (Apple, ((type, Banana, ), (type, Carrot, )), )`
 
-We can represent this with tuples:
+`sort_key(Apple<Banana, Banana> = (class_template, (Apple, (type, Banana, ), (type, Banana, )), ))`
 
-`(class_template, Apple, (type, Banana), (type, Carrot))`
+`sort_key(Apple<Carrot, Carrot> = (class_template, (Apple, ((type, Carrot, ), (type, Carrot, )), ))`
 
-`(class_template, Apple, (type, Banana), (type, Banana))`
+Note: the empty bit after the identifier is the empty qualifier pack.
 
-`(class_template, Apple, (type, Carrot), (type, Carrot))`
+The above would be ordered `sort_key(Apple<Banana, Banana>)`,
+`sort_key(Apple<Banana, Carrot>)`, `sort_key(Apple<Carrot, Carrot>`.
 
 ### Function Types
 
@@ -425,7 +434,7 @@ void foo(int i);
 ```
 
 This function can be represented by:
-`(function, (type, void), (type, int))`
+`(function, (foo, (type, void), (type, int)))`
 
 ```cpp
 void foo(int)
@@ -434,9 +443,9 @@ void foo(int, double)
 
 We can represent these types with 
 
-`(function, (type, void), (type, int))`
+`sort_key(void foo(int)) = (function, (foo, (type, void), (type, int)))`
 
-`(function, (type, void), (type, int), (type, double))`
+`sort_key(void foo(int, double)) = (function, (foo, (type, void), ((type, int), (type, double)))`
 
 So, the type of `void foo(int)` would precede the type of `void foo(int, double)`
 
@@ -456,7 +465,7 @@ struct Foo {
 
 Produces the following tuple representation
 
-`(member_function, (type, void), (type, Foo), (type, int), (type, float))`
+`(function, (bar, (type, void), (type, Foo, ), ((type, int)), ((type, float)))`
 
 ### Variadic Function Types
 
@@ -476,7 +485,7 @@ the type of `void foo(Foo)`.
 
 We can represent these as:
 
-`(function (type, void) (type, Foo))`
+`(function (type, void) (type, Foo, ))`
 
 `(function (type, void) (type, Foo, ...))`
 
@@ -496,8 +505,7 @@ int f(double);
 
 The type of `f<char, int>` would produce the representation:
 
-`(function_template, (type, int), ((type, char), (type, int)), (type, double))`
-
+`sort_key(function, (f, (type, int), ((type, char), (type, int)), (type, double)))`
 
 ### Parameter Packs
 
@@ -543,11 +551,11 @@ two<one> value2;
 
 These are represented by tuples:
 
-`(class_template, zero, (type, int))`
+`sort_key(zero<int>) = (class_template, (zero, (type, int)))`
 
-`(class_template, one, (class_template, (type, zero)))`
+`sort_key(one<zero>) = (class_template, (one, (class_template, (type, zero))))`
 
-`(class_template, two, (class_template, (type, one)))`
+`sort_key(two<one>) = (class_template, (two, (class_template, (type, one))))`
 
 ### Variable Templates
 
@@ -560,7 +568,7 @@ constexpr std::pair<F, S> pair_one_two = {1, 2};
 
 the type of `pair_one_two<int, double>` can be represented as:
 
-`(variable_template, pair_one_two, (type, int), (type, double))`
+`sort_key(pair_one_two<int, double>) = (variable_template, (pair_one_two, (type, int), (type, double)))`
 
 ### Alias Templates
 
@@ -572,9 +580,25 @@ template< class T >
 using remove_cvref_t = typename remove_cvref<T>::type;
 ```
 
-We can represent `remove_cvref_t` as:
+`sort_key(remove_cvref_t) = (alias_template, remove_cvref_t)`
 
-`(alias_template, remove_cvref_t)`
+### Concepts
+
+Concepts are ordered in a similar manner to variable templates. 
+
+```cpp
+template <typename T, typename F = decltype([](T){})> 
+concept f = requires (T i, F f = [](T){}) {
+    {f(i)} -> std::convertible_to<void>;
+};
+```
+
+In order to order the type of the lambda declared in `concept f`, `concept f` 
+must be comparable with other types.
+
+Concepts shall be ordered first by name, then by template arguments.
+
+`sort_key(f<int>) = (concept, (f, (type, int), (lambda, 0)))`
 
 # Acknowledgements
 
