@@ -412,11 +412,15 @@ Apple<Banana, Banana>;
 Apple<Carrot, Carrot>;
 ```
 
+`sort_key` of a class template shall be defined as:
+
+`sort_key(<class template>) = (class_template, (<name>, (sort_key(<parameter>)...)))`
+
+So
+
+`sort_key(Apple<Banana, Carrot> = (class_template, (Apple, (sort_key(Banana), sort_key(Carrot)), )`
+
 `sort_key(Apple<Banana, Carrot> = (class_template, (Apple, ((type, Banana, ), (type, Carrot, )), )`
-
-`sort_key(Apple<Banana, Banana> = (class_template, (Apple, (type, Banana, ), (type, Banana, )), ))`
-
-`sort_key(Apple<Carrot, Carrot> = (class_template, (Apple, ((type, Carrot, ), (type, Carrot, )), ))`
 
 Note: the empty bit after the identifier is the empty qualifier pack.
 
@@ -430,21 +434,23 @@ Function types shall be ordered by
 1. Return type
 2. Parameters, lexicographically.
 
+The `sort_key` of a function shall be defined as:
+
+`sort_key(<function>) = (function, (<name>, sort_key(<return type>), (sort_key(<parameters>...)))`
+
 ```cpp
 void foo(int i);
 ```
 
 This function can be represented by:
-`(function, (foo, (type, void), (type, int)))`
+`(function, (foo, (type, void), ((type, int))))`
 
 ```cpp
 void foo(int)
 void foo(int, double)
 ```
 
-We can represent these types with 
-
-`sort_key(void foo(int)) = (function, (foo, (type, void), (type, int)))`
+`sort_key(void foo(int)) = (function, (foo, (type, void), ((type, int))))`
 
 `sort_key(void foo(int, double)) = (function, (foo, (type, void), ((type, int), (type, double)))`
 
@@ -458,6 +464,12 @@ Function types shall be ordered by
 2. The type of the class it is a member of.
 3. Parameters, lexicographically.
 
+The sort key of a member function shall be defined as:
+
+`sort_key(<member function>) =`
+
+`(function, (<name>, sort_key(<class>), sort_key(<return>), (sort_key(<parameters>)...))))`
+
 ```cpp
 struct Foo {
   void bar(int i, float j);
@@ -466,7 +478,7 @@ struct Foo {
 
 Produces the following tuple representation
 
-`(function, (bar, (type, void), (type, Foo, ), ((type, int)), ((type, float)))`
+`(function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))`
 
 ### Variadic Function Types
 
@@ -506,7 +518,7 @@ int f(double);
 
 The type of `f<char, int>` would produce the representation:
 
-`sort_key(function, (f, (type, int), ((type, char), (type, int)), (type, double)))`
+`sort_key(function, (f, (type, int), ((type, char), (type, int)), ((type, double))))`
 
 ### Parameter Packs
 

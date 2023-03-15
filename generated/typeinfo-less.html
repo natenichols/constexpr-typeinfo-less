@@ -588,7 +588,8 @@ code.sourceCode > span { display: inline; }
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>T x <span class="op">=</span> <span class="op">[]{</span> <span class="cf">return</span> T<span class="op">{</span><span class="dv">0</span><span class="op">}</span>; <span class="op">}())</span>;</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">//           ^^^^^^^^^^^^^^^^^^ this one</span></span></code></pre></div>
-<p>The _key-tuple for <code class="sourceCode default">f&lt;int&gt;</code> is <!-- The _key-tuple_ for `f<int>` is `((function, f, (type, int)), (type, void), (type, (lambda, 0))`. --></p>
+<p>The <em>key-tuple</em> for <code class="sourceCode default">f&lt;int&gt;</code> is <code class="sourceCode default">(function, (f, (type, void), (type, int), (type, int)))</code></p>
+<p>The <em>key-tuple</em> for the lambda is <code class="sourceCode default">((function, (f, (type, void), (type, int), (type, int))), (type, (lambda, 0)))</code>.</p>
 <p>Note: because of the regular structure of <em>key-tuples</em>, such anonymous classes will compare greater than any entity that has a simple identifier, due to tuples comparing greater than atoms (which simple names are).</p>
 <h4 data-number="4.4.3.1" id="lambda-types"><span class="header-section-number">4.4.3.1</span> Lambda types<a href="#lambda-types" class="self-link"></a></h4>
 <p>Types of lambda objects are ordered first by where they are declared, then by declaration order.</p>
@@ -728,9 +729,11 @@ code.sourceCode > span { display: inline; }
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Carrot<span class="op">&gt;</span>;</span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
+<p><code class="sourceCode default">sort_key</code> of a class template shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;class template&gt;) = (class_template, (&lt;name&gt;, (sort_key(&lt;parameter&gt;)...)))</code></p>
+<p>So</p>
+<p><code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt; = (class_template, (Apple, (sort_key(Banana), sort_key(Carrot)), )</code></p>
 <p><code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt; = (class_template, (Apple, ((type, Banana, ), (type, Carrot, )), )</code></p>
-<p><code class="sourceCode default">sort_key(Apple&lt;Banana, Banana&gt; = (class_template, (Apple, (type, Banana, ), (type, Banana, )), ))</code></p>
-<p><code class="sourceCode default">sort_key(Apple&lt;Carrot, Carrot&gt; = (class_template, (Apple, ((type, Carrot, ), (type, Carrot, )), ))</code></p>
 <p>Note: the empty bit after the identifier is the empty qualifier pack.</p>
 <p>The above would be ordered <code class="sourceCode default">sort_key(Apple&lt;Banana, Banana&gt;)</code>, <code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt;)</code>, <code class="sourceCode default">sort_key(Apple&lt;Carrot, Carrot&gt;</code>.</p>
 <h3 data-number="4.9.4" id="function-types"><span class="header-section-number">4.9.4</span> Function Types<a href="#function-types" class="self-link"></a></h3>
@@ -739,12 +742,13 @@ code.sourceCode > span { display: inline; }
 <li>Return type</li>
 <li>Parameters, lexicographically.</li>
 </ol>
+<p>The <code class="sourceCode default">sort_key</code> of a function shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;function&gt;) = (function, (&lt;name&gt;, sort_key(&lt;return type&gt;), (sort_key(&lt;parameters&gt;...)))</code></p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span> i<span class="op">)</span>;</span></code></pre></div>
-<p>This function can be represented by: <code class="sourceCode default">(function, (foo, (type, void), (type, int)))</code></p>
+<p>This function can be represented by: <code class="sourceCode default">(function, (foo, (type, void), ((type, int))))</code></p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span><span class="op">)</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span>, <span class="dt">double</span><span class="op">)</span></span></code></pre></div>
-<p>We can represent these types with</p>
-<p><code class="sourceCode default">sort_key(void foo(int)) = (function, (foo, (type, void), (type, int)))</code></p>
+<p><code class="sourceCode default">sort_key(void foo(int)) = (function, (foo, (type, void), ((type, int))))</code></p>
 <p><code class="sourceCode default">sort_key(void foo(int, double)) = (function, (foo, (type, void), ((type, int), (type, double)))</code></p>
 <p>So, the type of <code class="sourceCode default">void foo(int)</code> would precede the type of <code class="sourceCode default">void foo(int, double)</code></p>
 <h3 data-number="4.9.5" id="member-function-types"><span class="header-section-number">4.9.5</span> Member Function Types<a href="#member-function-types" class="self-link"></a></h3>
@@ -754,11 +758,14 @@ code.sourceCode > span { display: inline; }
 <li>The type of the class it is a member of.</li>
 <li>Parameters, lexicographically.</li>
 </ol>
+<p>The sort key of a member function shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;member function&gt;) =</code></p>
+<p><code class="sourceCode default">(function, (&lt;name&gt;, sort_key(&lt;class&gt;), sort_key(&lt;return&gt;), (sort_key(&lt;parameters&gt;)...))))</code></p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> bar<span class="op">(</span><span class="dt">int</span> i, <span class="dt">float</span> j<span class="op">)</span>;</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
 <p>Produces the following tuple representation</p>
-<p><code class="sourceCode default">(function, (bar, (type, void), (type, Foo, ), ((type, int)), ((type, float)))</code></p>
+<p><code class="sourceCode default">(function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))</code></p>
 <h3 data-number="4.9.6" id="variadic-function-types"><span class="header-section-number">4.9.6</span> Variadic Function Types<a href="#variadic-function-types" class="self-link"></a></h3>
 <p>Variadic function shall be ordered in a similar way. In a variadic function, the last argument is a variadic argument. A variadic argument shall be ordered immediately after its underlying type.</p>
 <p>Given:</p>
@@ -774,7 +781,7 @@ code.sourceCode > span { display: inline; }
 <div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> f<span class="op">(</span><span class="dt">double</span><span class="op">)</span>;</span></code></pre></div>
 <p>The type of <code class="sourceCode default">f&lt;char, int&gt;</code> would produce the representation:</p>
-<p><code class="sourceCode default">sort_key(function, (f, (type, int), ((type, char), (type, int)), (type, double)))</code></p>
+<p><code class="sourceCode default">sort_key(function, (f, (type, int), ((type, char), (type, int)), ((type, double))))</code></p>
 <h3 data-number="4.9.8" id="parameter-packs"><span class="header-section-number">4.9.8</span> Parameter Packs<a href="#parameter-packs" class="self-link"></a></h3>
 <p>Parameter are ordered as class templates.</p>
 <p>Given:</p>
@@ -818,7 +825,6 @@ code.sourceCode > span { display: inline; }
 <p>Given</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span> <span class="kw">class</span> T <span class="op">&gt;</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> remove_cvref_t <span class="op">=</span> <span class="kw">typename</span> remove_cvref<span class="op">&lt;</span>T<span class="op">&gt;::</span>type;</span></code></pre></div>
-<p>We can represent <code class="sourceCode default">remove_cvref_t</code> as:</p>
 <p><code class="sourceCode default">sort_key(remove_cvref_t) = (alias_template, remove_cvref_t)</code></p>
 <h3 data-number="4.9.12" id="concepts"><span class="header-section-number">4.9.12</span> Concepts<a href="#concepts" class="self-link"></a></h3>
 <p>Concepts are ordered in a similar manner to variable templates.</p>
