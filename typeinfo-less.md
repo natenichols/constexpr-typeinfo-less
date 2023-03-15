@@ -41,7 +41,7 @@ different compilation units.
 # Proposal
 
 This proposal only concerns itself with ordering types. It has implications to
-the whole reflection space as it is a subset of providing Strong Ordering on 
+the whole reflection space as it is a subset of providing strong ordering on 
 std::meta::info objects.
 
 We propose the following as a canonical way of sorting all types that are
@@ -86,11 +86,10 @@ The remainder of the paper concerns itself only with unqualified types.
 
 ## Ordering Scalar Types
 
-We order scalar types before any compound types; built-in types first, followed 
-by class types.
+Scalar types shall be ordered before compound types.
 
-built-in types with simple names must be ordered before any types that reference
-other types.
+Built-in types with simple names shall be ordered before any types that
+reference other types.
 
 In particular, scalar types should be ordered as follows:
 
@@ -98,17 +97,46 @@ In particular, scalar types should be ordered as follows:
 2. `nullptr_t` as the first monostate
 3. any other monostates, if added, sorted alphabetically
 4. `bool` as the first bi-state
-5. (any other bi-states, if added)
+5. any other bi-states, if added, sorted alphabetically.
 6. Raw-memory types (`char`, `signed char`, `unsigned char`, std::byte)
 7. Integral types in order of size, signed before unsigned (`short`, `unsigned short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`, `unsigned long long`, followed by any implementation-defined wider integral types like __int128_t etc.). Intersperse any implementation-defined built-in integral types as needed between the above.
 8. Any remaining character types that are not type-aliases of any of the above, including unicode, according to the following rules: smallest first, unicode-specific variants after non-unicode variants.
-9. Floating-point types, in order of size. In case of ties, `float`, `double` and `long double` come before any types from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1467r9.html.
+9. Floating-point types, in order of size. In case of ties, `float`, `double` and `long double` come before any floating point types.
 10. Enumeration types, (internally ordered by rules for class type ordering by name)
-11. Function types (internally ordered by rules in section [function-types])
+11. Function types (internally ordered by rules in section [Function Types])
 12. Pointer types (internally ordered by their pointee-type)
 13. Pointer-to-member types (internally ordered by pointee-type)
 
-Class types shall be ordered according to the rules below, see [ordering-classes]
+Class types shall be ordered according to the rules below, see [Ordering Compound Types]
+
+## Tuple Representation
+
+For the purposes of this paper, types shall be broken down into tuples of atoms
+and kinds. These tuples provide a way for types to be ordered.
+
+Each value in the tuple shall be a tuple of Kind (see [Kinds]) and atoms (see 
+[Atoms]) that represent the type.
+
+These tuples shall be ordered lexicographically.
+
+Given
+```cpp
+namespace foo::bar {
+    struct i;
+}
+
+namespace baz {
+  struct j;
+}
+```
+
+`foo::bar::i` produces `((namespace, foo), (namespace, bar), (type, i))`
+
+`baz::j` produces `((namespace, baz), (type, j))`
+
+When compared, these yield
+
+`baz::j` < `foo::bar::i`, since `namespace baz` precedes `namespace foo`
 
 ## Kinds
 
@@ -126,7 +154,7 @@ follows from lowest to highest.
 - variable template
 - alias template
 
-## List of Atoms
+## Atoms
 
 The following are atoms of ordering tuples. They shall be ordered from lowest to
 highest.
@@ -135,7 +163,7 @@ highest.
 - `[]` (unknown bound array)
 - `[n]` (known bound array of size n)
 - kinds (see [kinds])
-- name of class
+- name of a class type
 - `*` (pointer)
 - `...` (variadic parameter)
 
@@ -164,38 +192,11 @@ namespace outer2 {
 The order of the three structs w/ type `i` types shall be
 `outer1::i < outer2::inner1::i < outer2::inner2::i`.
 
+See the example in [Tuple Representation].
+
 ### anonymous namespace
 The anonymous namespace shall be ordered after its enclosing namespace but
 before any named namespaces.
-
-## Tuple Representation
-
-Types will be broken down into tuples. These tuples provide a way for types to
-be ordered.
-
-Each value in the tuple will be a pair of Kind (see [Kinds]) and atoms that 
-represent the type.
-
-These tuples will be ordered lexicographically.
-
-Given
-```cpp
-namespace foo::bar {
-    struct i;
-}
-
-namespace baz {
-  struct j;
-}
-```
-
-`foo::bar::i` produces `((namespace, foo), (namespace, bar), (type, i))`
-
-`baz::j` produces `((namespace, baz), (type, j))`
-
-When compared, these yield
-
-`baz::j` < `foo::bar::i`, since `namespace baz` precedes `namespace foo`
 
 ## Ordering Array Types
 
@@ -232,7 +233,7 @@ This can be represented as:
 
 `((type, T), [3], [2])`
 
-## Ordering Compound Types:
+## Ordering Compound Types
 
 ### Ordering Class Types
 
@@ -260,13 +261,32 @@ As such, we define the ordering tuples:
 
 ### Non Type Template Parameters
 
-NTTPs are lexicographically ordered by their scalar subobjects. 
+NTTPs shall first be ordered by their type, then their value.
+
+Given:
+```cpp
+template <auto T>
+struct s {
+    decltype(T) i = T;
+};
+
+s<1u> a;
+s<1.0f> b;
+```
+
+`s<1u>` shall be ordered before `s<1.0f>`, as integral types come before
+floating point types.
+
+NTTPs of the same type shall be lexicographically ordered by their scalar
+subobjects. 
+
+NTTPs of the same pointer type shall be ordered by instantiation order.
 
 ### Class Templates
 
-Lets start with the simple case. Class templates are ordered by:
+Class templates shall be ordered by:
 
-1) Class name, alphabetically
+1) Class name, alphabetically.
 2) Template arguments, applied lexicographically.
 
 For example, given:
@@ -370,7 +390,7 @@ Given
 
 ```cpp
 template <typename T, typename U>
-T f(U);
+int f(double);
 ```
 
 The type of `f<char, int>` would produce the representation:
@@ -453,7 +473,7 @@ These are represented by tuples:
 
 ### Variable Templates
 
-Variable templates are ordered by name, then type of template parameter.
+Variable templates are ordered by name, then by template parameter.
 
 ```cpp
 template <typename F, typename S>
