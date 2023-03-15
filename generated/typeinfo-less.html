@@ -708,7 +708,7 @@ code.sourceCode > span { display: inline; }
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="dv">1</span><span class="bu">u</span><span class="op">&gt;</span> a;</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">&gt;</span> b;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(s&lt;1u&gt;) = ((type, (s, sort_key(1u))))</code></p>
-<p>We can define sort_key of <code class="sourceCode default">1u</code> as: <code class="sourceCode default">sort_key(1u) = ( sort_key(delctype(1u)), 1)</code></p>
+<p>We can define sort_key of <code class="sourceCode default">1u</code> as: <code class="sourceCode default">sort_key(1u) = ( sort_key(decltype(1u)), 1)</code></p>
 <p><code class="sourceCode default">s&lt;1u&gt;</code> shall be ordered before <code class="sourceCode default">s&lt;1.0f&gt;</code>, as integral types come before floating point types.</p>
 <p>NTTPs of the same type shall be lexicographically ordered by their scalar subobjects.</p>
 <p>NTTPs of the same pointer type shall be ordered by instantiation order.</p>
@@ -728,6 +728,8 @@ code.sourceCode > span { display: inline; }
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Carrot<span class="op">&gt;</span>;</span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
+<p>Note, <code class="sourceCode default">sort_key(&lt;parameter&gt;)...</code> will be used to denote a tuple where <code class="sourceCode default">sort_key</code> has been applied to all parameters.</p>
+<p>For <code class="sourceCode default">void f(Foo, Bar)</code> <code class="sourceCode default">sort_key(&lt;parameters&gt;)...</code> would mean <code class="sourceCode default">(sort_key(Foo), sort_key(Bar))</code></p>
 <p><code class="sourceCode default">sort_key</code> of a class template shall be defined as:</p>
 <p><code class="sourceCode default">sort_key(&lt;class template&gt;) = (class_template, (&lt;name&gt;, (sort_key(&lt;parameter&gt;)...)))</code></p>
 <p>So</p>

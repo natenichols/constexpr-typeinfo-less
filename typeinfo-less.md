@@ -381,7 +381,7 @@ s<1.0f> b;
 `sort_key(s<1u>) = ((type, (s, sort_key(1u))))`
 
 We can define sort_key of `1u` as:
-`sort_key(1u) = ( sort_key(delctype(1u)), 1)`
+`sort_key(1u) = ( sort_key(decltype(1u)), 1)`
 
 `s<1u>` shall be ordered before `s<1.0f>`, as integral types come before
 floating point types.
@@ -410,6 +410,11 @@ Apple<Banana, Carrot>;
 Apple<Banana, Banana>;
 Apple<Carrot, Carrot>;
 ```
+
+Note, `sort_key(<parameter>)...` will be used to denote a tuple where `sort_key`
+has been applied to all parameters.
+
+For `void f(Foo, Bar)` `sort_key(<parameters>)...` would mean `(sort_key(Foo), sort_key(Bar))`
 
 `sort_key` of a class template shall be defined as:
 
