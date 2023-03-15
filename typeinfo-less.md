@@ -120,7 +120,6 @@ There are the following kinds of entities that can appear in _key-tuples_.
 6. variable template
 7. concept
 8. function
-9. template parameter
 
 Note: everything but values is pretty simple, but we haven't dealt with values
 extensively yet with the R0 of this paper.
@@ -476,9 +475,7 @@ struct Foo {
 };
 ```
 
-Produces the following tuple representation
-
-`(function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))`
+`sort_key(Foo::bar) = (function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))`
 
 ### Variadic Function Types
 
@@ -508,6 +505,12 @@ Function templates are ordered after member functions. They shall be ordered:
 1) By return type
 2) By template parameters, lexicographically
 3) By function parameters, lexicographically
+
+The sort key of a member function shall be defined as:
+
+`sort_key(<function template>) =`
+
+`(function, (<name>, sort_key(<return>), (sort_key(<template_parameters>)...), (sort_key(<parameters>)...)))`
 
 Given 
 

@@ -566,7 +566,6 @@ code.sourceCode > span { display: inline; }
 <li>variable template</li>
 <li>concept</li>
 <li>function</li>
-<li>template parameter</li>
 </ol>
 <p>Note: everything but values is pretty simple, but we haven’t dealt with values extensively yet with the R0 of this paper.</p>
 <h2 data-number="4.4" id="identifiers"><span class="header-section-number">4.4</span> Identifiers<a href="#identifiers" class="self-link"></a></h2>
@@ -764,8 +763,7 @@ code.sourceCode > span { display: inline; }
 <div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> bar<span class="op">(</span><span class="dt">int</span> i, <span class="dt">float</span> j<span class="op">)</span>;</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
-<p>Produces the following tuple representation</p>
-<p><code class="sourceCode default">(function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))</code></p>
+<p><code class="sourceCode default">sort_key(Foo::bar) = (function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))</code></p>
 <h3 data-number="4.9.6" id="variadic-function-types"><span class="header-section-number">4.9.6</span> Variadic Function Types<a href="#variadic-function-types" class="self-link"></a></h3>
 <p>Variadic function shall be ordered in a similar way. In a variadic function, the last argument is a variadic argument. A variadic argument shall be ordered immediately after its underlying type.</p>
 <p>Given:</p>
@@ -777,6 +775,9 @@ code.sourceCode > span { display: inline; }
 <p><code class="sourceCode default">(function (type, void) (type, Foo, ...))</code></p>
 <h3 data-number="4.9.7" id="function-template-types"><span class="header-section-number">4.9.7</span> Function Template Types<a href="#function-template-types" class="self-link"></a></h3>
 <p>Function templates are ordered after member functions. They shall be ordered: 1) By return type 2) By template parameters, lexicographically 3) By function parameters, lexicographically</p>
+<p>The sort key of a member function shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;function template&gt;) =</code></p>
+<p><code class="sourceCode default">(function, (&lt;name&gt;, sort_key(&lt;return&gt;), (sort_key(&lt;template_parameters&gt;)...), (sort_key(&lt;parameters&gt;)...)))</code></p>
 <p>Given</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> f<span class="op">(</span><span class="dt">double</span><span class="op">)</span>;</span></code></pre></div>
