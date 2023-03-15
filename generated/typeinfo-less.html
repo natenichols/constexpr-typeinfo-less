@@ -556,7 +556,7 @@ code.sourceCode > span { display: inline; }
 <li>parameter pack (<code class="sourceCode default">...</code> in <code class="sourceCode default">typename...</code>)</li>
 </ol>
 <h3 data-number="4.3.1" id="kinds"><span class="header-section-number">4.3.1</span> Kinds<a href="#kinds" class="self-link"></a></h3>
-<p>There are the following kinds of entities that can appear in <em>key-tuples</em>.</p>
+<p>There are the following kind tokens that can appear in <em>key-tuples</em>.</p>
 <ol type="1">
 <li>value</li>
 <li>namespace</li>
@@ -578,7 +578,7 @@ code.sourceCode > span { display: inline; }
 <p>Example:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> a <span class="op">{</span> <span class="kw">namespace</span> <span class="op">{</span> <span class="kw">struct</span> s; <span class="op">}</span> <span class="op">}</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sort_key<span class="op">(</span>a<span class="op">::</span>s<span class="op">)</span> <span class="op">=</span> <span class="op">((</span><span class="kw">namespace</span>, a<span class="op">)</span>, <span class="op">(</span><span class="kw">namespace</span>, <span class="st">&quot;&quot;</span><span class="op">)</span>, <span class="op">(</span>type, s<span class="op">))</span></span></code></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sort_key<span class="op">(</span>a<span class="op">::</span>s<span class="op">)</span> <span class="op">=</span> <span class="op">((</span><span class="kw">namespace</span>, a<span class="op">)</span>, <span class="op">(</span><span class="kw">namespace</span>, <span class="st">&quot;&quot;</span><span class="op">)</span>, <span class="op">(</span>type, s, <span class="op">))</span></span></code></pre></div>
 <h3 data-number="4.4.3" id="unnamed-entities"><span class="header-section-number">4.4.3</span> Unnamed entities<a href="#unnamed-entities" class="self-link"></a></h3>
 <p>Unnamed entities are all given a name that is not an identifier (but is, in fact, a tuple), and are then numbered consecutively, starting with zero, based on their name-scope.</p>
 <p>Name-scopes are namespaces, classes, unions, functions, and enumerations.</p>

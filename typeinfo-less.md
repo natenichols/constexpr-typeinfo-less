@@ -110,7 +110,7 @@ The atoms of _key-tuples_ are ordered as follows:
 
 ### Kinds
 
-There are the following kinds of entities that can appear in _key-tuples_.
+There are the following kind tokens that can appear in _key-tuples_.
 
 1. value
 2. namespace
@@ -144,7 +144,7 @@ Example:
 ```cpp
 namespace a { namespace { struct s; } }
 
-sort_key(a::s) = ((namespace, a), (namespace, ""), (type, s))
+sort_key(a::s) = ((namespace, a), (namespace, ""), (type, s, ))
 ```
 
 ### Unnamed entities
