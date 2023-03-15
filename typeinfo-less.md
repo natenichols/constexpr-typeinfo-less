@@ -577,6 +577,8 @@ These are represented by tuples:
 
 Variable templates are ordered by name, then by template parameter.
 
+`sort_key(<variable_template>) = (variable_template, (<name>, (sort_key(<template_parameter>)...)))`
+
 ```cpp
 template <typename F, typename S>
 constexpr std::pair<F, S> pair_one_two = {1, 2};
@@ -590,6 +592,8 @@ the type of `pair_one_two<int, double>` can be represented as:
 
 Alias templates are ordered alphabetically by name.
 
+`sort_key(<alias_template>) = (alias_template, <name>)`
+
 Given 
 ```cpp
 template< class T >
@@ -601,6 +605,8 @@ using remove_cvref_t = typename remove_cvref<T>::type;
 ### Concepts
 
 Concepts are ordered in a similar manner to variable templates. 
+
+`sort_key(<concept>) = (concept, (<name>, (sort_key(<template_parameter>)...)))`
 
 ```cpp
 template <typename T, typename F = decltype([](T){})> 

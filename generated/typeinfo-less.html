@@ -817,18 +817,21 @@ code.sourceCode > span { display: inline; }
 <p><code class="sourceCode default">sort_key(two&lt;one&gt;) = (class_template, (two, (class_template, (type, one))))</code></p>
 <h3 data-number="4.9.10" id="variable-templates"><span class="header-section-number">4.9.10</span> Variable Templates<a href="#variable-templates" class="self-link"></a></h3>
 <p>Variable templates are ordered by name, then by template parameter.</p>
+<p><code class="sourceCode default">sort_key(&lt;variable_template&gt;) = (variable_template, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F, <span class="kw">typename</span> S<span class="op">&gt;</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>pair<span class="op">&lt;</span>F, S<span class="op">&gt;</span> pair_one_two <span class="op">=</span> <span class="op">{</span><span class="dv">1</span>, <span class="dv">2</span><span class="op">}</span>;</span></code></pre></div>
 <p>the type of <code class="sourceCode default">pair_one_two&lt;int, double&gt;</code> can be represented as:</p>
 <p><code class="sourceCode default">sort_key(pair_one_two&lt;int, double&gt;) = (variable_template, (pair_one_two, (type, int), (type, double)))</code></p>
 <h3 data-number="4.9.11" id="alias-templates"><span class="header-section-number">4.9.11</span> Alias Templates<a href="#alias-templates" class="self-link"></a></h3>
 <p>Alias templates are ordered alphabetically by name.</p>
+<p><code class="sourceCode default">sort_key(&lt;alias_template&gt;) = (alias_template, &lt;name&gt;)</code></p>
 <p>Given</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span> <span class="kw">class</span> T <span class="op">&gt;</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> remove_cvref_t <span class="op">=</span> <span class="kw">typename</span> remove_cvref<span class="op">&lt;</span>T<span class="op">&gt;::</span>type;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(remove_cvref_t) = (alias_template, remove_cvref_t)</code></p>
 <h3 data-number="4.9.12" id="concepts"><span class="header-section-number">4.9.12</span> Concepts<a href="#concepts" class="self-link"></a></h3>
 <p>Concepts are ordered in a similar manner to variable templates.</p>
+<p><code class="sourceCode default">sort_key(&lt;concept&gt;) = (concept, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> F <span class="op">=</span> <span class="kw">decltype</span><span class="op">([](</span>T<span class="op">){})&gt;</span> </span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> f <span class="op">=</span> <span class="kw">requires</span> <span class="op">(</span>T i, F f <span class="op">=</span> <span class="op">[](</span>T<span class="op">){})</span> <span class="op">{</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>f<span class="op">(</span>i<span class="op">)}</span> <span class="op">-&gt;</span> std<span class="op">::</span>convertible_to<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>;</span>
