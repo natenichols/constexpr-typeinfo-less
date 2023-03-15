@@ -48,7 +48,7 @@ strong ordering on `std::meta::info` objects.
 Below, we propose a canonical way of sorting all types in c++, which allows us
 to mark `std::type_info::before` `constexpr`.
 
-This proposal does propose marking type successor access as `constexpr` (i.e.
+This proposal does not propose marking type successor access as `constexpr` (i.e.
 `typeid(int).next()`), as the result of that is by necessity compilation-unit
 specific.
 
