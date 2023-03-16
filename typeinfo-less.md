@@ -235,6 +235,7 @@ namespace outer2 {
 ```
 
 The order of the three structs w/ type `i` types shall be
+
 `sort_key(outer1::i) < sort_key(outer2::inner1::i) < sort_key(outer2::inner2::i)`.
 
 ## Types
@@ -395,7 +396,7 @@ subobjects.
 
 NTTPs of the same pointer type shall be ordered by instantiation order.
 
-### ordering Class Template Specializations
+### Ordering Class Template Specializations
 
 Class templates shall be ordered by:
 
@@ -422,13 +423,13 @@ For `void f(Foo, Bar)` `sort_key(<parameter>)...` would mean `(sort_key(Foo), so
 
 `sort_key` of a class template shall be defined as:
 
-`sort_key(<class template>) = (class_template, (<name>, (sort_key(<parameter>)...)))`
+`sort_key(<class template>) = (type, (<name>, (sort_key(<parameter>)...)))`
 
 So
 
-`sort_key(Apple<Banana, Carrot> = (class_template, (Apple, (sort_key(Banana), sort_key(Carrot)), )`
+`sort_key(Apple<Banana, Carrot> = (type, (Apple, (sort_key(Banana), sort_key(Carrot)), )`
 
-`sort_key(Apple<Banana, Carrot> = (class_template, (Apple, ((type, Banana, ), (type, Carrot, )), )`
+`sort_key(Apple<Banana, Carrot> = (type, (Apple, ((type, Banana, ), (type, Carrot, )), )`
 
 Note: the empty bit after the identifier is the empty qualifier pack.
 
@@ -533,7 +534,7 @@ Tuple<Foo, Bar> t4;
 would be ordered:
 `Tuple<>` < `Tuple<int>` < `Tuple<Bar>` < `Tuple<Foo>` < `Tuple<Foo, Bar>`
 
-### Kinds of Templates
+### Ordering Class Templates
 
 Kinds of templates are ordered first by name, then by template arguments.
 
@@ -554,11 +555,11 @@ two<one> value2;
 
 These are represented by tuples:
 
-`sort_key(zero<int>) = (class_template, (zero, (type, int)))`
+`sort_key(zero<int>) = (type, (zero, (type, int)))`
 
-`sort_key(one<zero>) = (class_template, (one, (class_template, (type, zero))))`
+`sort_key(one<zero>) = (type, (one, (class_template, zero))))`
 
-`sort_key(two<one>) = (class_template, (two, (class_template, (type, one))))`
+`sort_key(two<one>) = (type, (two, (class_template, one))))`
 
 ### Variable Templates
 
