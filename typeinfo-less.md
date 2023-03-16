@@ -510,30 +510,6 @@ We can represent these as:
 
 `(function (type, void) (type, Foo, ...))`
 
-### Function Template Types
-
-Function templates are ordered after member functions. They shall be ordered:
-1) By return type
-2) By template parameters, lexicographically
-3) By function parameters, lexicographically
-
-The sort key of a member function shall be defined as:
-
-`sort_key(<function template>) =`
-
-`(function, (<name>, (sort_key(<template_parameter>)...)), sort_key(<return type>), (sort_key(<parameter>)...)))`
-
-Given 
-
-```cpp
-template <typename T, typename U>
-int f(double);
-```
-
-The type of `f<char, int>` would produce the representation:
-
-`sort_key(function, (f, (type, int), ((type, char), (type, int)), ((type, double))))`
-
 ### Parameter Packs
 
 Parameter are ordered as class templates.
