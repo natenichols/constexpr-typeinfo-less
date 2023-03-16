@@ -167,7 +167,7 @@ void f(T x = []{ return T{0}; }());
 
 The _key-tuple_ for `f<int>` is:
 
- `(function, (f, (type, int)), (type, void), ((type, int)))`
+`(function, (f, (type, int)), (type, void), ((type, int)))`
 
 The _key-tuple_ for the lambda is:
 
@@ -444,7 +444,7 @@ Function types shall be ordered by
 
 The `sort_key` of a function shall be defined as:
 
-`sort_key(<function>) = (function, (<name>, sort_key(<return type>), (sort_key(<parameters>...)))`
+`sort_key(<function>) = (function, <name>, sort_key(<return type>), (sort_key(<parameters>)...))`
 
 ```cpp
 void foo(int i);
@@ -458,9 +458,9 @@ void foo(int)
 void foo(int, double)
 ```
 
-`sort_key(void foo(int)) = (function, (foo, (type, void), ((type, int))))`
+`sort_key(void foo(int)) = (function, foo, (type, void), ((type, int)))`
 
-`sort_key(void foo(int, double)) = (function, (foo, (type, void), ((type, int), (type, double)))`
+`sort_key(void foo(int, double)) = (function, foo, (type, void), ((type, int), (type, double)))`
 
 So, the type of `void foo(int)` would precede the type of `void foo(int, double)`
 
@@ -476,7 +476,7 @@ The sort key of a member function shall be defined as:
 
 `sort_key(<member function>) =`
 
-`(function, (<name>, sort_key(<class>), sort_key(<return>), (sort_key(<parameters>)...))))`
+`(function, (<name>, sort_key(<class>)), sort_key(<return type>), (sort_key(<parameters>)...))))`
 
 ```cpp
 struct Foo {
@@ -484,7 +484,7 @@ struct Foo {
 };
 ```
 
-`sort_key(Foo::bar) = (function, (bar, (type, void), (type, Foo, ), ((type, int), (type, float))))`
+`sort_key(Foo::bar) = (function, (bar, (type, Foo, )), (type, void), ((type, int, ), (type, float, )))`
 
 ### Variadic Function Types
 
@@ -519,7 +519,7 @@ The sort key of a member function shall be defined as:
 
 `sort_key(<function template>) =`
 
-`(function, (<name>, sort_key(<return>), (sort_key(<template_parameters>)...), (sort_key(<parameters>)...)))`
+`(function,  (<name>, (sort_key(<template_parameters>)...)), sort_key(<return type>), , (sort_key(<parameters>)...)))`
 
 Given 
 
