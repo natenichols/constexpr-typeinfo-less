@@ -1,7 +1,7 @@
 ---
 title: Standardized Type Ordering
 document: P2830R0
-date: 2022-10-29
+date: 2023-03-15
 audience: EWG
 author:
   - name: Nate Nichols
