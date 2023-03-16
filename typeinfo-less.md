@@ -342,9 +342,9 @@ shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`, and
 
 `sort_key(T[10][2]) = (type, ([2], sort_key(T[10]))) = (type, ([2], (type, ([10], (type, T, ))))`
 
-## Ordering Compound Types
+## Ordering Class Types
 
-### Ordering Class Types
+### Ordering Simple Class Types
 
 Class types shall be greater than scalar types.
 
@@ -395,7 +395,7 @@ subobjects.
 
 NTTPs of the same pointer type shall be ordered by instantiation order.
 
-### Class Templates
+### ordering Class Template Specializations
 
 Class templates shall be ordered by:
 
@@ -418,7 +418,7 @@ Apple<Carrot, Carrot>;
 Note, `sort_key(<parameter>)...` will be used to denote a tuple where `sort_key`
 has been applied to all parameters.
 
-For `void f(Foo, Bar)` `sort_key(<parameters>)...` would mean `(sort_key(Foo), sort_key(Bar))`
+For `void f(Foo, Bar)` `sort_key(<parameter>)...` would mean `(sort_key(Foo), sort_key(Bar))`
 
 `sort_key` of a class template shall be defined as:
 
@@ -444,7 +444,7 @@ Function types shall be ordered by
 
 The `sort_key` of a function shall be defined as:
 
-`sort_key(<function>) = (function, <name>, sort_key(<return type>), (sort_key(<parameters>)...))`
+`sort_key(<function>) = (function, <name>, sort_key(<return type>), (sort_key(<parameter>)...))`
 
 ```cpp
 void foo(int i);
@@ -476,7 +476,7 @@ The sort key of a member function shall be defined as:
 
 `sort_key(<member function>) =`
 
-`(function, (<name>, sort_key(<class>)), sort_key(<return type>), (sort_key(<parameters>)...))))`
+`(function, (<name>, sort_key(<class>)), sort_key(<return type>), (sort_key(<parameter>)...))))`
 
 ```cpp
 struct Foo {
@@ -484,7 +484,9 @@ struct Foo {
 };
 ```
 
-`sort_key(Foo::bar) = (function, (bar, (type, Foo, )), (type, void), ((type, int, ), (type, float, )))`
+`sort_key(Foo::bar) = `
+
+`(type, Foo, ), (function, (bar, (type, Foo, )), (type, void), ((type, int, ), (type, float, ))))`
 
 ### Variadic Function Types
 
@@ -519,7 +521,7 @@ The sort key of a member function shall be defined as:
 
 `sort_key(<function template>) =`
 
-`(function,  (<name>, (sort_key(<template_parameters>)...)), sort_key(<return type>), , (sort_key(<parameters>)...)))`
+`(function, (<name>, (sort_key(<template_parameter>)...)), sort_key(<return type>), (sort_key(<parameter>)...)))`
 
 Given 
 
