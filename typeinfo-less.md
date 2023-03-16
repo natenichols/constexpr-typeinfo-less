@@ -340,7 +340,7 @@ shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`, and
 
 `sort_key(T[0]) = (type, ([], (type, T, )))`
 
-`sort_key(T[10][2]) = (type, ([2], sort_key(T[10]))) = (type, ([2], ([10], (type, T, )))`
+`sort_key(T[10][2]) = (type, ([2], sort_key(T[10]))) = (type, ([2], (type, ([10], (type, T, ))))`
 
 ## Ordering Compound Types
 
