@@ -165,9 +165,13 @@ void f(T x = []{ return T{0}; }());
 //           ^^^^^^^^^^^^^^^^^^ this one
 ```
 
-The _key-tuple_ for `f<int>` is `(function, (f, (type, void), (type, int), (type, int)))`
+The _key-tuple_ for `f<int>` is:
 
-The _key-tuple_ for the lambda is `((function, (f, (type, void), (type, int), (type, int))), (type, (lambda, 0)))`.
+ `(function, (f, (type, int)), (type, void), ((type, int)))`
+
+The _key-tuple_ for the lambda is:
+
+`((function, (f, (type, int)), (type, void), ((type, int))), (type, (lambda, 0), ))`.
 
 Note: because of the regular structure of _key-tuples_, such anonymous classes
 will compare greater than any entity that has a simple identifier, due to
