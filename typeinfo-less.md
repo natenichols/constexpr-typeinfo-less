@@ -15,13 +15,30 @@ toc: true
 
 Currently, `std::type_info` provides a stable but _implementation defined_ order
 of types. Despite being a compile-time property, the implementation defined
-`type_info::before` is not marked `constexpr`. This paper explores a
-standardized ordering of types in C++, as well as the impact of marking 
-`type_info::before` `constexpr`.
+`type_info::before` is not marked `constexpr`. The behavior of 
+`type_info::before` cannot be changed with risking backwards compatibility
+issues. This paper explores a standardized ordering of types in C++, as well as 
+exposing a separate library function called `type_order` that exposes the `<=>` 
+operator for ordering types types.
+
+`std::type_order` will provide the following interface 
+```cpp
+template <typename F> 
+struct type_order final {
+    template <typename G>
+    constexpr auto operator<=>(type_order<G> const &rhs) const noexcept 
+      -> std::strong_ordering;
+};
+```
 
 # Revision History
 
 0. New Paper
+1. Revision 1
+   - Introduce `std::type_order` to prevent changing `std::type_info::before`
+   - Anonymous namespaces can't be empty
+   - Add section named scopes
+   - Add FAQ section
 
 # Motivation
 
@@ -73,6 +90,32 @@ Let us name this transformation as `sort_key(entity)`.
 
 The rest of the paper is concerned with defining this transformation.
 
+## Named Scopes
+A type is ordered by appending `sort_key(...)` to the named scope it is declared
+in. The following are _named scopes_:
+
+1. namespaces
+2. classes
+3. functions
+4. lambdas
+5. concepts
+
+Starting with the global namespace, `sort_key(global)=()`. Any type
+`T` declared in the global namespace shall have a defined `sort_key` operation
+that resolves to `(sort_key(T))`.
+
+If `class foo` is declared in `struct bar`: 
+
+```cpp
+struct bar { class foo; }
+```
+
+```
+sort_key(foo) = (sort_key(bar), sort_key(foo)) = ((type, bar), (type, foo, ))
+```
+
+This shall hold for any of the above named scopes.
+
 ### Example:
 
 Given
@@ -89,8 +132,8 @@ namespace baz {
 
 Then:
 
-- `sort_key(foo::bar::i)` is `((namespace, foo), (namespace, bar), (type, i))`.
-- `sort_key(baz::j)` is `((namespace, baz), (type, j))`
+- `sort_key(foo::bar::i)` is `((namespace, foo), (namespace, bar), (type, i, ))`.
+- `sort_key(baz::j)` is `((namespace, baz), (type, j, ))`
 
 When compared, the result is that `baz::j` < `foo::bar::i`, since `namespace
 baz` precedes `namespace foo`.
@@ -137,14 +180,16 @@ namespace foo::bar { struct baz; }
 
 ### Anonymous Namespace
 
-The identifier for the anonymous namespace is the empty string.
+Anonymous namespaces shall be represented with the ! character, as it cannot
+be represented by the empty string and cannot collide with any user defined
+names;
 
 Example:
 
 ```cpp
 namespace a { namespace { struct s; } }
 
-sort_key(a::s) = ((namespace, a), (namespace, ""), (type, s, ))
+sort_key(a::s) = ((namespace, a), (namespace, "!"), (type, s, ))
 ```
 
 ### Unnamed entities
@@ -392,9 +437,25 @@ We can define sort_key of `1u` as:
 floating point types.
 
 NTTPs of the same type shall be lexicographically ordered by their scalar
-subobjects. 
+subobjects. Meaning 
 
-NTTPs of the same pointer type shall be ordered by instantiation order.
+```cpp
+struct F final {
+  struct G final {
+    int h;
+    int i;
+  } g;
+  int j;
+};
+
+F f{{0,1}, 2};
+F f2{{1,2}, 3};
+```
+
+`sort_key(s<f>) < sort_key(s<f2>)`;
+
+NTTPs of the same pointer or reference type shall be ordered by instantiation 
+order.
 
 ### Ordering Class Template Specializations
 
@@ -609,6 +670,14 @@ must be comparable with other types.
 Concepts shall be ordered first by name, then by template arguments.
 
 `sort_key(f<int>) = (concept, (f, (type, int), (lambda, 0)))`
+
+# FAQ
+
+*Why should this be standardized?*
+
+Currently, type_info::before only provides implementation defined type order.
+This means that two different compilation units could order a type differently.
+Doing this would allow portable typesets across compilers.
 
 # Acknowledgements
 
