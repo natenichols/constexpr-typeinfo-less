@@ -31,9 +31,11 @@ Therefore, we split this paper into two parts:
 1. Revision 1
    - Introduce options to prevent changing `std::type_info::before`
    - Anonymous namespaces can't be empty
-   - Add section named scopes
    - Add FAQ section
-
+   - Add motivating examples
+   - Add proposed syntax
+   - Add appendix
+     
 # Motivation
 
 There is currently no way in portable C++ to sort types at compile-time.
@@ -82,7 +84,7 @@ Please see the appendices on how to do it.
 
 It *would* be nice if `apply_canonicalized` was a language built-in, but to do that,
 we need to first define `ORDER(x, y)`. After we define `ORDER`, putting
-`apply_canonicalized` into `type_trats` is a far simpler proposition.
+`apply_canonicalized` into `type_traits` is a far simpler proposition.
 
 
 #### Uses of a canonicalized variant
