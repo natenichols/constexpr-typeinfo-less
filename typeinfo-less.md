@@ -52,7 +52,32 @@ The inability to sort and unique types leads to the instantiation of an
 exponential number of templates instead of just one per typeset, which leads to
 code-bloat and untenable compile-times.
 The problem is fundamentally that we generate types with a different name but
-the same behavior.
+the same behavior, and there is no way to avoid this.
+
+The goal here is to provide a _flexible_ language mechanism to let both
+`Foo<A, B, C>` and `Foo<C, B, A>` produce the same underlying
+`Foo_impl<A, B, C>`.
+
+The reason we start with `ORDER()` and not "just give me typesets" is that we
+need flexibility; consider
+
+- a given library might want to deduplicate on a part and keep either last or
+    first, or even make it ill-formed:
+    `Foo<pair<A, X>, pair<B, Y>, pair<A, Z>>`
+    might want to be the same as
+    `Foo_impl<pair<A, X>, pair<B, Y>>`
+    or 
+    `Foo_impl<pair<A, Z>, pair<B, Y>>`
+- a given library might actually just want canonicalized multisets:
+    `Foo<A, B, A, A, C>` should perhaps be `Foo<A, A, A, B, C>`
+- or treat the first one as special:
+    `Matrix<float, policy1, policy2, policy3>` should only deduplicate
+    policies.
+
+We must provide `ORDER` in order to `sort` and `unique`; they are required
+building blocks for any `set` primitive. Put another way, even if we
+standardized a `set`, we'd need to somehow canonicalize the order (due to
+mangling and debug info), leading us back here.
 
 Without such canonicalization, it is also functionally impossible to enumerate
 the set of function templates to instantiate in a separate compilation unit.
@@ -70,6 +95,40 @@ a template argument. Crucially, also consider the interactions with [@P1985R3]
 and [@P2841R1], which introduce `concept` and `variable-template` arguments.
 
 
+### Canonicalizing policy-based libraries
+
+Consider the needs of a library for type-erasure; we'd like the user to specify
+the capabilities to erase. Fundamentally, these capabilities are a set.
+
+Observe:
+
+```cpp
+using T1 = lib::dyn<ostreamable, json_serializable, iterable<int>, scalar_multiplicable<int>>;
+```
+
+Different users of the library will likely provide these capabilities in
+different orders; this becomes especially problematic when writing functions:
+
+```cpp
+using T2 = lib::dyn<json_serializable, ostreamable, iterable<int>, scalar_multiplicable<int>>;
+                    ~~~~~~ flipped ~~~~~~~~~~~~~~~
+void f(T2 const&);
+```
+
+We can solve this by having type aliases, but if these sets are *computed*, we
+are left without recourse:
+
+```cpp
+int sum = 0;
+auto pipeline1 = 
+   log(std::cerr) | sum_into(&sum) | imul(sum) | json_dump(std::cout);
+auto pipeline2 = 
+   sum_into(&sum) | imul(sum) | json_dump(std::cout) | log(std::cerr);
+```
+
+The above pipelines need the same type-erased interface for its input, but will
+likely compute it as `T1` and `T2`, respectively.
+
 ### Canonicalized variant
 
 The most obvious example is a canonicalized `std::variant`, that is, something like
@@ -85,6 +144,9 @@ Please see the appendices on how to do it.
 It *would* be nice if `apply_canonicalized` was a language built-in, but to do that,
 we need to first define `ORDER(x, y)`. After we define `ORDER`, putting
 `apply_canonicalized` into `type_traits` is a far simpler proposition.
+
+**Note:** `apply_canonicalized` is roughly `mp11::mp_sort` + `mp11::unique`
+with the order derived from `ORDER`.
 
 
 #### Uses of a canonicalized variant
@@ -929,11 +991,31 @@ User-programmed functions also won't adapt to language evolution; this feature w
 Finally, sorting is arbitrary; having it be consistent throughout the software
 ecosystem is potentially a great enabler of interoperability.
 
+## But couldn't this be done faster with reflection?
+
+No; Peter Dimov shares an interesting anecdote.
+
+I have in Mp11 the algorithm mp_unique, which
+takes a list of types and removes the duplicates. In the course of writing
+the reflection papers, their authors occasionally took Mp11 code examples
+and tried to show how they are elegantly implemented using value-based
+reflection metaprogramming.
+
+So, you take a vector<info> that contains types, and then you simply
+apply the existing algorithm std::unique to it, et voila... oh wait.
+
+std::unique wants a sorted range, and you can't std::sort the info
+vector, because info objects aren't ordered, even when they refer
+to types.
+
 # Acknowledgements
 
 Thanks to all of the following:
 
   - Davis Herring for his suggestions on ordering non-type template parameters.
+  - Ville Voutilainen for his critique of examples, and providing a simple way
+    of explaining the motivation
+  - Peter Dimov for a helpful anecdote, now in the FAQ.
 
 
 # Appendix A: building `apply_canonicalized`
