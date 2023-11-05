@@ -122,12 +122,14 @@ are left without recourse:
 int sum = 0;
 auto pipeline1 = 
    log(std::cerr) | sum_into(&sum) | imul(sum) | json_dump(std::cout);
+// dyn<ostreamable, iterable<int>, scalar_multiplicable<int>, json_serializable>
 auto pipeline2 = 
    sum_into(&sum) | imul(sum) | json_dump(std::cout) | log(std::cerr);
+// dyn<iterable<int>, scalar_multiplicable<int>, json_serializable, ostreamable>
 ```
 
-The above pipelines need the same type-erased interface for its input, but will
-likely compute it as `T1` and `T2`, respectively.
+The above pipelines need the same type-erased interface for its input, and
+neither is either `T1` or `T2`.
 
 ### Canonicalized variant
 
