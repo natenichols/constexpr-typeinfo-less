@@ -1,7 +1,7 @@
 ---
 title: Standardized Type Ordering
-document: P2830R1
-date: 2023-10-06
+document: P2830R2
+date: 2024-03-10
 audience: EWG
 author:
   - name: Nate Nichols
@@ -13,52 +13,61 @@ toc: true
 
 # Abstract 
 
-Currently, `std::type_info` provides a stable but _implementation defined_ order of types.
+As of C++23, `std::type_info` provides a stable but _unspecified_ and
+non-`constexpr` order on types.
+
 This paper explores a standardized ordering of types in C++, and possible syntaxes for it.
 
-Defining `type_info::before` would consitute an ABI break, so this paper
-explores various other ways of exposing a standardized type ordering.
+This paper is split into two parts:
 
-Therefore, we split this paper into two parts:
-
-1. the design of the exposition-only function `ORDER(x, y)`, which deals with
+1. the design of the exposition-only function `TYPE_ORDER(x, y)`, which deals with
    how such an order should be defined,
-2. how to expose this capability to the programmer.
+2. how to expose this capability to the programmer (syntax).
 
 # Revision History
 
 0. New Paper
 1. Revision 1
-   - Introduce options to prevent changing `std::type_info::before`
-   - Anonymous namespaces can't be empty
-   - Add FAQ section
-   - Add motivating examples
-   - Add proposed syntax
-   - Add appendix
+    - Introduce options to prevent changing `std::type_info::before`
+    - Anonymous namespaces can't be empty
+    - Add FAQ section
+    - Add motivating examples
+    - Add proposed syntax
+    - Add appendix
+2. Revision 2
+    - Propose to make the `TYPE_ORDER(X, Y)` definition `constexpr` and
+      _implementation-defined_, as suggested by EWGi and BSI reviewers.
+    - added wording
+    - added more motivating examples
      
 # Motivation
 
 There is currently no way in portable C++ to sort types at compile-time.
 
-Various libraries exist to do this, mostly by utilizing `__PRETTY_FUNCTION__`,
-but this is non-portable and error-prone (consider forward-declared enums).
-There are multiple stack-overflow questions on the topic.
+Various libraries hack it together, mostly by utilizing `__PRETTY_FUNCTION__`,
+but all such methods are non-portable and error-prone (consider
+forward-declared enums). There are multiple stack-overflow questions on the
+topic.
+
+[One such implementation](https://github.com/Bronek/functional/blob/85a810f65b381ea2faf77113ae19f257be80db23/include/functional/detail/meta.hpp#L92)
+is part of the monadic functional library by Bronek Kozicki et al.
 
 Fundamentally, we need a way to canonicalize sets and multisets of types.
 This is necessary when building any kind of compositional library in C++, from
 `std::execution` [@P2300R7], mixin libraries, libraries of monadic
 components and operators, policy-based libraries, etc.
 The inability to sort and unique types leads to the instantiation of an
-exponential number of templates instead of just one per typeset, which leads to
+combinatorial number of templates instead of just one per typeset, which leads to
 code-bloat and untenable compile-times.
-The problem is fundamentally that we generate types with a different name but
-the same behavior, and there is no way to avoid this.
+The problem is fundamentally that without typeset canonicalization, we generate
+different template specializations but equivalent behavior, and there is no way
+to avoid this.
 
 The goal here is to provide a _flexible_ language mechanism to let both
 `Foo<A, B, C>` and `Foo<C, B, A>` produce the same underlying
 `Foo_impl<A, B, C>`.
 
-The reason we start with `ORDER()` and not "just give me typesets" is that we
+The reason we start with `TYPE_ORDER()` and not "just give me typesets" is that we
 need flexibility; consider
 
 - a given library might want to deduplicate on a part and keep either last or
@@ -74,25 +83,31 @@ need flexibility; consider
     `Matrix<float, policy1, policy2, policy3>` should only deduplicate
     policies.
 
-We must provide `ORDER` in order to `sort` and `unique`; they are required
+We must provide `TYPE_ORDER` in order to `sort` and `unique`; they are required
 building blocks for any `set` primitive. Put another way, even if we
 standardized a `set`, we'd need to somehow canonicalize the order (due to
 mangling and debug info), leading us back here.
 
-Without such canonicalization, it is also functionally impossible to enumerate
-the set of function templates to instantiate in a separate compilation unit.
-For the same reason, it's utterly impossible to type-erase them in a fixed-size
-virtual function table.
+Without such canonicalization, it is infeasible to enumerate the set of
+function templates to instantiate in a separate compilation unit. For the same
+reason, it's utterly impossible to type-erase them in a fixed-size virtual
+function table.
 
 
 ## Motivating Examples
 
 This section introduces the kind of code we would like to write, regardless of
 how this feature ends up being spelled. To not prejudice the reader in this
-section, please assume the existence of an exposition-only `consteval` function
-`ORDER(x, y) -> std::strong_ordering` whose arguments can be anything usable as
-a template argument. Crucially, also consider the interactions with [@P1985R3]
-and [@P2841R1], which introduce `concept` and `variable-template` arguments.
+section, please assume the existence of an exposition-only `consteval` macro 
+`TYPE_ORDER(x, y) -> std::strong_ordering` whose arguments can be any cv-ref
+qualified types.
+
+**Note:** while `TYPE_ORDER(x, y)` is defined on types, we can define a set of
+class templates that take an arbitrary template argument, and `TYPE_ORDER`
+those; this induces an order on all entities that can be template arguments.
+
+Crucially, also consider the interactions with [@P1985R3] and [@P2841R1], which
+introduce `concept` and `variable-template` arguments.
 
 
 ### Canonicalizing policy-based libraries
@@ -137,25 +152,73 @@ The most obvious example is a canonicalized `std::variant`, that is, something l
 
 ```cpp
 template <typename... Ts>
-using canonical_variant = apply_canonicalized<std::variant, Ts...>;
+using variant_for = apply_canonicalized<std::variant, Ts...>;
 ```
 
-Building `apply_canonicalized` is not terribly difficult, as long as we have `ORDER`.
+Building `apply_canonicalized` is not terribly difficult, as long as we have `TYPE_ORDER`.
 Please see the appendices on how to do it.
 
 It *would* be nice if `apply_canonicalized` was a language built-in, but to do that,
-we need to first define `ORDER(x, y)`. After we define `ORDER`, putting
+we need to first define `TYPE_ORDER(x, y)`. After we define `TYPE_ORDER`, putting
 `apply_canonicalized` into `type_traits` is a far simpler proposition.
 
 **Note:** `apply_canonicalized` is roughly `mp11::mp_sort` + `mp11::unique`
-with the order derived from `ORDER`.
+with the order derived from `TYPE_ORDER`.
 
 
-#### Uses of a canonicalized variant
+Effectively any time a variant is type-indexed instead of integer-indexed, we
+would prefer the compiler generate just one type per set, instead of
+type-per-list.
 
-Uses are legion; but they all follow same the pattern as the type from
-`std::execution` needed for the result between suspension points.
-We call it `notification`, as a nod to `rxcpp`.
+Examples follow, but they are by no means exhaustive.
+
+#### Multiple error kinds and `std::expected`
+
+Consider a `std::expected` for an algorithm that can fail in several ways:
+
+```cpp
+auto read_packet(socket& sock)
+    -> expected<message, variant<io_error, decode_error>>;
+```
+
+Such an algorithm doesn't care about whether the error type is
+`variant<io_error, decode_error>` or `variant<decode_error, io_error>`. This is
+not as much of a problem in cases where the programmer writes the types by
+hand, but consider the generic situation where several errors must be
+aggregated generically:
+
+```cpp
+template <typename Decoder>
+auto read_packet(socket& sock)
+    -> expected<Decoder::message_type,
+                variant</*uniqued and sorted io_error + Decoder::error_types*/>>;
+```
+
+If we had member packs and pack aliases, and a nice built-in `set`, we could o the above as
+
+```cpp
+template <typename... Ts>
+...using set = __builtin_uniqued_sorted<Ts...>;
+
+variant<...set<io_error, Decoder::...error_types...>...>;
+```
+
+#### Suspension-point storage for asynchronous code
+
+`std::execution` (and every other async library) needs a variant-type to store
+the current result at a suspension point. In general, since it models a
+"suspended" function call, it's analogous to some kind of
+
+```cpp
+variant<
+    closure_tuple<set_value, Arg1_1, Arg1_2, Arg1_3>, // first possible entry point
+    closure_tuple<set_value, Arg2_1>,                 // second possible entry point
+    closure_tuple<set_error, ...>,
+    ...
+>
+```
+
+The venerable `rxcpp` library by Kirk Shoop calls this type a _notification_.
 
 Consider the `transfer(scheduler)` algorithm; it receives all
 `set_value(PACK)`, `set_error(PACK)` and possibly `set_stopped()` parameter
@@ -169,31 +232,40 @@ The code using it looks like this:
 some_computation | transfer(scheduler) | then([](auto&&...args){/*...*/})...
 ```
 
-There are many `transfer` calls in a given program, and odds are many of them
-deal with similar signals, but the order of the 4 or 5 different `set_value()`
-channels is unlikely to be the same in every pipeline. Moreover, many of these
-channels exhibit incast semantics - going from many types to few - and so
-without canonicalization, we are left with a variant with many more types than
-is necessary. We also generate far more code than required, since we generate
-switch statments for every ordering of channels, instead of every set.
+All the possible closure tuples are fundamentally unsorted, and generating the
+assembly, debug information, and everything else for this type more than once
+is a waste of compile-time and executable space (as well as instruction cache).
 
+Furthermore, stamping out this type multiple times also duplicates the calling
+code, and given the different indices, COMDAT folding cannot deduplicate those
+code-paths.
+
+#### Compositional State machine models
+
+The states of most state-machines are fundamentally unordered, as are the
+message types they receive. If a state machine is generated (such as in a
+compile-time regex library), canonicalizing identically-behaving components
+would lead to smaller state-machines and faster compile- and execution times.
 
 ### Canonicalized tuple
 
-Similarly to a canonicalized `variant`, a `canonicalized_tuple` can be implemented as
+Similarly to a canonicalized `variant`, a `canonicalized_tuple` could be implemented as
 
 ```cpp
 template <typename...Ts>
-using canonical_tuple = apply_canonicalized<tuple<Ts...>>;
+using canonical_tuple = apply_canonicalized<tuple, Ts...>;
+// or
+using canonical_tuple = tuple<...set<Ts...>...>;
 ```
 
 This is far less useful on its own than the `variant`, since initializing that
 type will be quite the chore. Instead, canonicalized tuples appear as a result
-of the `environment` monad, again, in implementations of `std::execution`.
+of the `environment` monads.
 
 `std::execution` mixes in an environment, which consists at least of a
 `stoppable_token`, a `scheduler`, and possibly other things like a `domain`,
-and, at least in the authors' implementation, arbitrary other things.
+and, at least in the authors' implementation, arbitrary other things. An
+`allocator` is also optionally part of the environment.
 
 The `environment<pair<Tags, Ts>...>` is a product type that is a map from `Tag`
 to a value of type `T`, say `std::stop_token` to `never_stop_token{}` and
@@ -218,7 +290,7 @@ type, which doesn't make much sense - the type behaves identically, this just
 leads to code bloat.
 
 
-### ABI and API stability
+### API stability
 
 The authors have observed a necessity to sometimes split parts of such pipeline
 compositions into different compilation units due to excessive compile times
@@ -229,49 +301,124 @@ names of explicit template specializations involved. By far, the main culprit
 has been the lack of a sensible canonicalization of names, as the order changes
 far more frequently than the set of types.
 
+Consider:
+
+```
+do_something()
+    | error_if_result_odd()       // there is no semantic change
+    | error_if_we_too_too_long()  // if we flip these lines
+    | ...
+```
+
+Flipping the lines will flip the two exit error types in the error list,
+however.
+
 Having a defined, stable order of types proved invaluable (even if we did hack
 the type order manually).
 
-# Proposal
 
-## `ORDER(x, y)`
+# Design discussion
 
-Notionally, this proposal concerns itself with ordering types, but _one does not
-simply order types_. This _is_ C++.
+The first two revisions of this proposal tried to construct a full type
+ordering from first principles. This is still included as the alternative
+proposal, should EWG want us to go that way.
 
-### Design Principles
+## Why implementation-defined?
 
-We wish to fulfil the following principles with this design; we are open to
-ones we might have missed.
+The overwhelming response of people working on implementations, as well as
+people sitting on the Itanium ABI standards committee, was that this is a
+fool's errand, and we need only look at the bugreports for the Itanium ABI to
+see why.
 
-#### Self-consistency
+### ABI specifications already have to do this work
+
+As a taster, consider the following conundrum:
+
+```cpp
+using what_type = decltype(
+        [](this auto&& self,
+           decltype([](decltype(self)&){}) x = {}){ return x; }());
+        // ^^ outer ^^ inner
+```
+
+The inner lambda's "name" is clearly dependent on the outer's, but it also goes
+the other way! The ABI standards already have to deal with such mangling
+conundrums, and duplicating their work in the C++ standard itself seems highly
+counterproductive, especially since the ABI standards already accomplish all
+the stability guarantees we would want.
+
+### The C++ standard doesn't own cross-compilation-unit semantics
+
+Another problem is that within the C++ standard, we cannot legislate what
+happens with orderings between compilation units. Granted, we do not need this
+for `constexpr`, but we do need it to be stable and make sense, so a certain
+amount of common sense will be expected from implementations _anyway_.
+
+The recommendation was overwhelmingly to just let the order be
+implementation-defined, and let the implementations do the sensible thing.
+
+### Any new proposal to C++ would have to consider the ordering
+
+"punting it off to implementations" saves the C++ standardization process from
+having to figure this out for every new proposal that touches types;
+implementations, however, already have representation on the committee, and
+will veto any truly unimplementable things in this space.
+
+### `TYPE_ORDER(X, Y)` already has public-facing API implications
+
+The "normalized" versions of types will inevitably show up in function
+signatures; if different compilers on the same platform produced different
+orderings, compilation units from different compilers would refuse to link,
+despite both "signatures" beings spelled identically.
+
+Letting the compiler vendors synchronize based on the mangling scheme or
+something equivalently useful is the same forum as the current ABI discussion
+forums; it seems the appropriate venue to standardize the ordering anyay,
+without making WG21 duplicate the work.
+
+## Desirable properties of `TYPE_ORDER(x, y)`
+
+### Stability
+
+The order should be the same across compilation units.
+This is key for generating ABI-compatible vtables, for instance.
+
+It also should be stable through time. An order based on an ABI-mangling scheme
+satisfies this notion, at least.
+
+### Free-standing
+
+The order should be available on freestanding implementations. One crucial
+use-case is replacing the exception mechanism on those platforms with return
+values of `std::expected` or similar, and compromising that is undesirable.
+
+### Consistency with `type_info::before()`
+
+Ideally, whenever `typeid(x).before(typeid(y)) == true`, then `TYPE_ORDER(x, y) ==
+std::strong_ordering::less`. The converse obviously cannot be true, since
+`TYPE_ORDER(x, y)` is finer than the order induced by `type_info::before()`.
+
+However, the standard currently says
+
+> The names, encoding rule, and collating sequence for types are all unspecified
+> and may differ between programs.
+
+Since this paper requires that the order not differ between programs, exposing
+this as a normative requirement is impossible without tightening this
+wording, which is outside the scope of this paper.
+
+### Self-consistency
 
 The ordering should be self-consistent, that is, for all possible template
 arguments `T`, `U`, and any unary template `some_template`:
 
-`ORDER(T, U) == ORDER(some_template<T>, some_template<U>)`.
+`TYPE_ORDER(T, U) == TYPE_ORDER(some_template<T>, some_template<U>)`.
 
+Implementations are encouraged to satisfy this principle, but are not required to.
 
-#### Readability
+### Reflection compatibility
 
-Types that look roughly the same should sort closely together. This is an
-aesthetic criterion, but sorting `T` close to `T&`, `T const&` and so on is
-probably a good idea, given that the user's main exposure to these types will
-be through typelists in error messages.
-
-This criterion asks for sorting things in the same namespace close together,
-for instance.
-
-
-#### Stability
-
-The order should be the same across compilation units and across platforms.
-This is key for generating ABI-compatible vtables, for instance.
-
-
-#### Reflection compatibility
-
-`operator<=>(std::meta::info, std::meta::info)` should be consistent with this
+Any `operator<=>(std::meta::info, std::meta::info)` should be consistent with this
 one.
 
 While `std::meta::info` [@P2320R0] objects can reflect more entities than just
@@ -279,13 +426,290 @@ types and values (mainly: expressions), any ordering defined on them should be
 finer than this one, and specifically consistent with it. We should do
 something that reflection can subsume.
 
+However, it doesn't seem like that proposal will define an ordering on `info`
+objects, and we need this solved sooner than that.
 
-### Approach
+# Proposal
+
+## Semantics
+
+Regardless of the syntax chosen, the semantics would be the following.
+
+Let `X` and `Y` be (possibly cv-ref) qualified types.
+
+`TYPE_ORDER(X, Y)` is an constant expression of type `std::strong_order`.
+
+- `std::same_as<X, Y> == true` if and only if `TYPE_ORDER(X, Y) == std::strong_ordering::equal`.
+- Otherwise, `TYPE_ORDER(X, Y)` is either `std::strong_ordering::less` or
+  `std::strong_ordering::greater`. Which of those is implementation-defined,
+  subject to the following semantic constraints.
+
+Implementations must define `TYPE_ORDER(X, Y)` such that it is an ordering, that is,
+it is transitive and antisymmetric; that is
+
+- if `TYPE_ORDER(X, Y) == std::strong_ordering::less`, then 
+  `TYPE_ORDER(Y, X) == `std::strong_ordering::greater` and vice versa
+- if `TYPE_ORDER(X, Y) == std::strong_ordering::less` and `TYPE_ORDER(Y, Z) ==
+  std::strong_ordering::less`, then `TYPE_ORDER(X, Z)` is also
+  `std::strong_ordering::less`.
+
+It is implementation-defined whether the order `TYPE_ORDER(X, Y)` is finer than the one
+implied by `std::type_info::before`. That is, 
+
+- if `typeid(X).before(typeid(Y))`, then `TYPE_ORDER(X, Y) == std::strong_ordering::less`.
+
+Note: the converse is not possible - `TYPE_ORDER(X, Y)` does not strip _cv-ref_ qualifiers.
+
+Please also note that `X` and `Y` are types (not expressions), and therefore
+`typeid` does not have dynamic typing semantics in this case.
+
+Note: Implementations are encouraged to do this if possible, and making it
+"implementation-defined" places a requirement on implementations to document
+whether they did so.
+
+## Syntax
+
+Any syntax will do for the use-case, but some better than others. This section
+explores the trade-offs in syntax choice.
+
+The authors recommend the first option.
+
+### Option 1 (preferred): a variable template `std::type_order_v<T, U>`
+
+Specifally:
+
+```cpp
+template <typename T, typename U>
+inline constexpr std::strong_ordering type_order_v = TYPE_ORDER(T, U); /* see below */
+template <typename T, typename U>
+struct type_order : integral_constant<strong_ordering, type_order_v<T, U>> {};
+
+// as a separate library proposal, once member packs make it
+template <typename... Ts>
+using ...typemultiset = /* pack of Ts, sorted by type_order_v */;
+template <typename... Ts>
+using ...typeset = /* uniqued ...typemultiset<Ts...>... */;
+```
+
+This seems like a pretty good choice. It does not need a new keyword, only
+depends on `<compare>`, and the name seems relatively discoverable.
+
+We could, in fact, put it into `<compare>` if we didn't want `<type_traits>` to
+depend on it.
+
+It's also freestanding, since it doesn't depend on `<typeinfo>`.
+
+We should also allow, as a special provision, the arguments to the above
+metafunctions to be incomplete.
+
+
+### Option 2: variable template `std::entity_ordering<X, Y>`
+
+Specifically:
+
+```cpp
+template <universal template X, universal template Y>
+inline constexpr std::strong_order entity_order_v = TYPE_ORDER(X, Y); /* see below */
+template <universal template X, universal template Y>
+struct entity_order : integral_constant<strong_ordering, entity_order_v<X, Y>> {};
+```
+
+This is a better option than Option 1 if we get universal template parameters,
+as we really want to also order class templates, not just types.
+
+However, without universal template parameters, we really don't have much of a
+choice but to reach for Option 1.
+
+The name `entity_order` is also slightly less obvious than `type_order`, but
+metaprogrammers shouldn't have trouble finding either.
+
+
+### Option 3: reflection
+
+Specifically:
+
+```cpp
+consteval std::partial_order entity_order(std::meta::info x, std::meta::info y) {
+    return __comparable(x, y) ? TYPE_ORDER(x, y) : std::partial_order::unordered;
+}
+```
+
+We could standardize a type order as a function on `std::meta::info` objects in
+`std::meta`. However, once we're in `std::meta::info` space, it's more
+difficult to know which reflections are comparable and which aren't, so such a
+function would need to return a `std::partial_order`, which seems decidedly
+less desirable.
+
+It also means we'd need to pass the correct kind of reflection into the
+ordering function, which is a bit less intuitive than just `decltype` or just
+the template parameter that we already have.
+
+
+### Option 4: heterogeneous `constexpr std::type_identity::operator<=>`
+
+Specifically:
+
+```cpp
+template <typename T, typename U>
+constexpr std::strong_order operator<=>(std::type_identity<T>, std::type_identity<U>);
+```
+
+**Pros:**
+
+- No new names.
+
+**Cons:**
+
+- Less discoverable than a new type-trait
+- Requires template instantiations of `type_identity<T>`, `type_identity<U>`,
+  as well as `operator<=>` overload resolution and substitution, which is quite
+  expensive compared to a single `type_order_v<T, U>` direct substitution and
+  lookup.
+- An extra `operator<=>` overload in the `std` namespace is a drag on overload
+  resolution
+- adds `<compare>` to `<type_traits>`, since that's where `type_identity` is
+- too cute?
+- doesn't work for nontypes
+
+### Option 5: `constexpr std::__lift<arg>::operator<=>`
+
+This option means we add `template <universal template> struct __lift {};` into
+`<type_traits>` and define `operator<=>` for it.
+
+**Pros:**
+
+- ... we'll need a lift sooner or later?
+
+**Cons:**
+
+- all the cons of `type_identity`
+- even more nonobvious
+- still needs a new name
+- needs a tutorial to find
+
+
+### Non-Option: `constexpr bool std::type_info::before()`
+
+It would be nice, but alas, operates on _cv-unqualified_ versions of the
+referenced type, so it's not sufficient.
+
+`constexpr std::strong_order(std::type_info, std::type_info)` has similar
+issues.
+
+
+# FAQ
+
+## Why should this be standardized?
+
+Because we have no way to reliably order types across compilation units at compile-time.
+
+## Why not wait for reflection?
+
+It's a good question. However, reflection will do _nothing_ for this problem by
+itself; the user will still have to implement ordering using `consteval`
+functions, which have no hope of being as fast as a compiler-provided built-in.
+
+User-programmed functions also won't adapt to language evolution; this feature will.
+
+Finally, sorting is arbitrary; having it be consistent throughout the software
+ecosystem is potentially a great enabler of interoperability.
+
+## But couldn't this be done faster with reflection?
+
+No; Peter Dimov shares an interesting anecdote.
+
+> I have in Mp11 the algorithm `mp_unique`, which
+> takes a list of types and removes the duplicates. In the course of writing
+> the reflection papers, their authors occasionally took Mp11 code examples
+> and tried to show how they are elegantly implemented using value-based
+> reflection metaprogramming.
+
+> So, you take a `vector<info>` that contains types, and then you simply
+> apply the existing algorithm `std::unique` to it, et voila... oh wait.
+
+> `std::unique` wants a sorted range, and you can't `std::sort` the info
+> vector, because info objects aren't ordered, even when they refer
+> to types.
+
+
+# Implementability
+
+The proposal has no questions on whether it _can_ be implemented - the question
+is about the definition of the order.
+
+The concerns raised by the implementers so far have been mostly around having
+to bring the name mangler from the backend and make it accessible to the
+compiler front-end, because the obvious implementation is to define the
+comparison result on the mangled type strings.
+
+Making this order match up with `type_info::before` is a matter of bringing the
+name mangler for the correct platform to the frontend.
+
+It is the opinion of the authors that this doesn't seem to be a layering
+violation, as the name mangling for a given platform is analogous to other
+platform properties, such as the size and alignment of pointers.
+
+If a platform does not have a name mangling strategy, _any_ name mangling
+scheme will still result in a standards-conforming implementation.
+
+
+# Proposed Wording
+
+In [compare.syn]{.sref}, add
+
+::: add
+
+```cpp
+template <class T, class U>
+struct type_order : integral_constant<strong_ordering, @_TYPE_ORDER(T, U)_@> {};
+template <class T, class U>
+inline constexpr strong_ordering type_order_v = type_order::value;
+```
+
+:::
+
+At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
+
+:::add
+
+**17.11.7: Type Ordering**
+
+[1]{.pnum} Define the constant expression `@_TYPE_ORDER(X, Y)_@` for arbitrary (possibly _cv_-qualified or reference) types `X` and `Y` as follows
+
+- [1.1]{.pnum} if `is_same_v<X, Y>`, then `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::equal`
+- [1.2]{.pnum} otherwise, it is implementation-defined whether `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` or `strong_ordering::greater`, subject to the following constraints 
+  - [1.2.1]{.pnum} antisymmetry: `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE_ORDER_@(Y, X)` is `strong_ordering::greater`
+  - [1.2.2]{.pnum} transitivity: if both `@_TYPE_ORDER(X, Y)_@` and `@_TYPE_ORDER(Y, Z)_@` are `strong_ordering::less`, then `@_TYPE_ORDER_(X, Z)_@` is also `strong_ordering::less`.
+
+[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE_ORDER(X, Y)_@>`.
+
+[3]{.pnum} _Recommended practice_: `@_TYPE_ORDER(X, Y)_@` should be a finer order than the one induced by `type_info::before` if such an implementation is possible on a given platform.
+
+:::
+
+# Acknowledgements
+
+Thanks to all of the following:
+
+  - Davis Herring for his suggestions on ordering non-type template parameters.
+  - Ville Voutilainen for his critique of examples, and providing a simple way
+    of explaining the motivation
+  - Peter Dimov for a helpful anecdote, now in the FAQ.
+  - Erich Keane for for pushing us back to the "implementation-defined" territory.
+
+
+# Appendix: full order proposal (former alternative)
+
+This is a poor first attempt at figuring out what it would take to specify this
+in the C++ standard. It seems like "implementation-defined" is a better
+approach.
+
+## Approach
 
 1. We define a **lowering to a _key-tuple_** for every entity in the language.
 2. The order is then defined on these _key-tuples_.
 
-### Structure of key-tuples
+## Structure of key-tuples
 
 Every _key-tuple_ is of the form `(@_element_@...)`.
 
@@ -301,7 +725,7 @@ Let us name this transformation as `sort_key(entity)`.
 
 The rest of the paper is concerned with defining this transformation.
 
-### Named Scopes
+## Named Scopes
 A type is ordered by appending `sort_key(...)` to the named scope it is declared
 in. The following are _named scopes_:
 
@@ -315,7 +739,7 @@ Starting with the global namespace, `sort_key(global) = ()`. Any type
 `T` declared in the global namespace shall have a defined `sort_key` operation
 that resolves to `(sort_key(T))`.
 
-#### Example 1: `class foo` is declared in `struct bar`: 
+### Example 1: `class foo` is declared in `struct bar`: 
 
 ```cpp
 struct bar { class foo; }
@@ -327,7 +751,7 @@ sort_key(foo) = (sort_key(bar), sort_key(foo)) = ((type, bar), (type, foo, ))
 
 This shall hold for any of the above named scopes.
 
-#### Example:
+### Example:
 
 Given
 
@@ -349,7 +773,7 @@ Then:
 When compared, the result is that `baz::j` < `foo::bar::i`, since `namespace
 baz` precedes `namespace foo`.
 
-### Atoms
+## Atoms
 
 The atoms of _key-tuples_ are ordered as follows:
 
@@ -362,7 +786,7 @@ The atoms of _key-tuples_ are ordered as follows:
 7. ellipsis (`...` in `f(...)`)
 8. parameter pack (`...` in `typename...`)
 
-### Kinds
+## Kinds
 
 There are the following kind tokens that can appear in _key-tuples_.
 
@@ -884,140 +1308,6 @@ Concepts shall be ordered first by name, then by template arguments.
 
 `sort_key(f<int>) = (concept, (f, (type, int), (lambda, 0)))`
 
-## Syntax
-
-The authors aren't too hung-up on the syntax. Any syntax will do for the
-use-case, but some better than others. This section explores the trade-offs in
-syntax choice.
-
-Authors recommend one of the first 3 options.
-
-### Option 1: `constexpr bool std::type_info::before()`
-
-**Pros:**
-
-- doesn't require a new token, just add `constexpr` in front of `before`
-- `std::type_info` is discoverable
-- built-in type-erasure (you can sort them in `std::array<>` with consteval `std::sort`!)
-    - going the other way is more difficult though, so doesn't quite pan out
-
-**Cons:**
-
-- breaks ABI
-- still requires including `<typeinfo>`, which many organizations ban
-- doesn't work for nontypes (contrast `entity_ordering<T, U>`)
-
-
-### Option 2: `constexpr std::strong_order(std::type_info, std::type_info)`
-
-**Pros**:
-
-- doesn't require a new token, we just need to define the overload.
-- `std::type_info` is discoverable, but `std::strong_order()` of `type_info` a
-  bit less-so
-- built-in type-erasure, though only helps so much.
-
-**Cons**:
-
-- requires including `<typeinfo>`
-- doesn't work for nontypes
-
-### Option 3: variable template `std::entity_ordering`
-
-This option means to put
-
-```cpp
-template <universal template T, universal template U>
-inline constexpr std::strong_order entity_ordering = ORDER(T, U); /* see paper */
-```
-
-into either `<type_traits>` or `<compare>`, depending on what EWG/LEWG recommend.
-
-Obviously, the name is bikesheddable.
-
-**Pros:**
-
-- completely new name, obviously available at compile-time
-- no need to include `<typeinfo>`
-
-**Cons:**
-
-- new name
-- not as discoverable (people look at `<typeinfo>`)
-
-### Option 4: `constexpr std::type_identity::operator<=>`
-
-**Pros:**
-
-- kinda obvious
-
-**Cons:**
-
-- adds `<compare>` to `<type_traits>`, since that's where `type_identity` is
-- too cute?
-- doesn't work for nontypes
-
-### Option 5: `constexpr std::__lift<arg>::operator<=>`
-
-This option means we add `template <universal template> struct __lift {};` into
-`<type_traits>` and define `operator<=>` for it.
-
-**Pros:**
-
-- ... we'll need a lift sooner or later?
-
-**Cons:**
-
-- really nonobvious
-- still needs a new name
-- needs a tutorial to find
-- yet-another-`type_info`, basically
-
-
-# FAQ
-
-## Why should this be standardized?
-
-`type_info::before` only provides implementation defined type order.
-This means that two different compilation units could order a type differently.
-Doing this would allow portable typesets across compilers.
-
-## Why not wait for reflection?
-
-It's a good question. However, reflection will do _nothing_ for this problem by
-itself; the user will still have to implement ordering using `consteval`
-functions, which have no hope of being as fast as a compiler-provided built-in.
-
-User-programmed functions also won't adapt to language evolution; this feature will.
-
-Finally, sorting is arbitrary; having it be consistent throughout the software
-ecosystem is potentially a great enabler of interoperability.
-
-## But couldn't this be done faster with reflection?
-
-No; Peter Dimov shares an interesting anecdote.
-
-I have in Mp11 the algorithm mp_unique, which
-takes a list of types and removes the duplicates. In the course of writing
-the reflection papers, their authors occasionally took Mp11 code examples
-and tried to show how they are elegantly implemented using value-based
-reflection metaprogramming.
-
-So, you take a vector<info> that contains types, and then you simply
-apply the existing algorithm std::unique to it, et voila... oh wait.
-
-std::unique wants a sorted range, and you can't std::sort the info
-vector, because info objects aren't ordered, even when they refer
-to types.
-
-# Acknowledgements
-
-Thanks to all of the following:
-
-  - Davis Herring for his suggestions on ordering non-type template parameters.
-  - Ville Voutilainen for his critique of examples, and providing a simple way
-    of explaining the motivation
-  - Peter Dimov for a helpful anecdote, now in the FAQ.
 
 
 # Appendix A: building `apply_canonicalized`
@@ -1068,10 +1358,10 @@ list<T> _canon<T>;
 template <typename T, typename... Ts>
 concatenate<
     // canonicalized things less than T
-    apply<canonicalized, concatenate<select<(ORDER(Ts, T) < 0), Ts>...>>,
+    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) < 0), Ts>...>>,
     list<T> /*T*/, //                        ~~~~~~~~~~~~~~~~
     // canonicalized things greater than T
-    apply<canonicalized, concatenate<select<(ORDER(Ts, T) > 0), Ts>... >>
+    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) > 0), Ts>... >>
     > //                                     ~~~~~~~~~~~~~~~~
 _canon<T, Ts...>;
 ```
@@ -1094,7 +1384,7 @@ Here for completeness, feel free to skip.
 
 struct undefined;
 
-#define ORDER(x, y) type_order_v<x, y>
+#define TYPE_ORDER(x, y) type_order_v<x, y>
 
 // in <type_traits>
 template <typename X, typename Y>
@@ -1153,9 +1443,9 @@ list<T> _canon<T>;
 
 template <typename T, typename... Ts>
 concatenate<
-    apply<canonicalized, concatenate<select<(ORDER(Ts, T) < 0), Ts>...>>,
+    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) < 0), Ts>...>>,
     list<T>,
-    apply<canonicalized, concatenate<select<(ORDER(Ts, T) > 0), Ts>... >>
+    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) > 0), Ts>... >>
     >
 _canon<T, Ts...>;
 
@@ -1174,4 +1464,13 @@ references:
     issued:
       year: 2019
     URL: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1907r1.html
+  - id: Functional Extensions Library
+    citation-label: fn
+    title: "Functional Extensions Library"
+    author:
+        family: Kozicki
+        given: Bronek
+    issued:
+        year: 2024
+    URL: https://github.com/Bronek/functional/
 ---
