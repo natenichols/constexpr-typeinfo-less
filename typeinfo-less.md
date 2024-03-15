@@ -49,7 +49,7 @@ but all such methods are non-portable and error-prone (consider
 forward-declared enums). There are multiple stack-overflow questions on the
 topic.
 
-[One such implementation](https://github.com/Bronek/functional/blob/85a810f65b381ea2faf77113ae19f257be80db23/include/functional/detail/meta.hpp#L92)
+[One such implementation](https://github.com/libfn/functional)
 is part of the monadic functional library by Bronek Kozicki et al.
 
 Fundamentally, we need a way to canonicalize sets and multisets of types.
@@ -1472,5 +1472,5 @@ references:
         given: Bronek
     issued:
         year: 2024
-    URL: https://github.com/Bronek/functional/
+    URL: https://github.com/libfn/functional
 ---
