@@ -437,7 +437,7 @@ Regardless of the syntax chosen, the semantics would be the following.
 
 Let `X` and `Y` be (possibly cv-ref) qualified types.
 
-`TYPE_ORDER(X, Y)` is an constant expression of type `std::strong_order`.
+`TYPE_ORDER(X, Y)` is an constant expression of type `std::strong_ordering`.
 
 - `std::same_as<X, Y> == true` if and only if `TYPE_ORDER(X, Y) == std::strong_ordering::equal`.
 - Otherwise, `TYPE_ORDER(X, Y)` is either `std::strong_ordering::less` or
@@ -509,7 +509,7 @@ Specifically:
 
 ```cpp
 template <universal template X, universal template Y>
-inline constexpr std::strong_order entity_order_v = TYPE_ORDER(X, Y); /* see below */
+inline constexpr strong_ordering entity_order_v = TYPE_ORDER(X, Y); /* see below */
 template <universal template X, universal template Y>
 struct entity_order : integral_constant<strong_ordering, entity_order_v<X, Y>> {};
 ```
@@ -529,7 +529,7 @@ metaprogrammers shouldn't have trouble finding either.
 Specifically:
 
 ```cpp
-consteval std::partial_order entity_order(std::meta::info x, std::meta::info y) {
+consteval std::partial_ordering partial_order(std::meta::info x, std::meta::info y) {
     return __comparable(x, y) ? TYPE_ORDER(x, y) : std::partial_order::unordered;
 }
 ```
@@ -551,7 +551,7 @@ Specifically:
 
 ```cpp
 template <typename T, typename U>
-constexpr std::strong_order operator<=>(std::type_identity<T>, std::type_identity<U>);
+constexpr std::strong_ordering operator<=>(std::type_identity<T>, std::type_identity<U>);
 ```
 
 **Pros:**
@@ -1386,7 +1386,6 @@ struct undefined;
 
 #define TYPE_ORDER(x, y) type_order_v<x, y>
 
-// in <type_traits>
 template <typename X, typename Y>
 constexpr inline std::strong_ordering type_order_v;
 
