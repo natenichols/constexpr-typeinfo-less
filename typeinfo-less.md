@@ -1,7 +1,7 @@
 ---
 title: Standardized Type Ordering
 document: P2830R2
-date: 2024-03-10
+date: 2024-03-18
 audience: EWG
 author:
   - name: Nate Nichols
@@ -305,8 +305,8 @@ Consider:
 
 ```
 do_something()
-    | error_if_result_odd()       // there is no semantic change
-    | error_if_we_too_too_long()  // if we flip these lines
+    | error_if_odd()          // there is no semantic change
+    | error_if_we_too_long()  // if we flip these lines
     | ...
 ```
 

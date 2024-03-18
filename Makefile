@@ -1,3 +1,3 @@
-all: generated/typeinfo-less.html generated/typeinfo-less.pdf
+all: generated/typeinfo-less.html
 
 include wg21/Makefile
