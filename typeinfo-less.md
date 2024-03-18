@@ -1,5 +1,5 @@
 ---
-title: Standardized Type Ordering
+title: Standardized Constexpr Type Ordering
 document: P2830R2
 date: 2024-03-18
 audience: EWG
