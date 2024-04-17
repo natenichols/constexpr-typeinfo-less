@@ -1,7 +1,7 @@
 ---
 title: Standardized Constexpr Type Ordering
-document: P2830R3
-date: 2024-04-09
+document: D2830R4
+date: 2024-04-17
 audience: EWG
 author:
   - name: Nate Nichols
@@ -43,6 +43,10 @@ This paper is split into two parts:
 3. Revision 3
     - incorporates wording feedback from Jens Maurer, to be presented in an EWG
       telecon
+4. Revision 4
+    - incorporated feedback from the EWG discussion on May 17th
+    - Added example of `__PRETTY_FUNCTION__` differences from Barry Revzin
+      (thanks!)
     
      
 # Motivation
@@ -51,8 +55,8 @@ There is currently no way in portable C++ to sort types at compile-time.
 
 Various libraries hack it together, mostly by utilizing `__PRETTY_FUNCTION__`,
 but all such methods are non-portable and error-prone (consider
-forward-declared enums). There are multiple stack-overflow questions on the
-topic.
+forward-declared enums - example in Annex). There are multiple stack-overflow
+questions on the topic.
 
 [One such implementation](https://github.com/libfn/functional)
 is part of the monadic functional library by Bronek Kozicki et al.
@@ -1463,6 +1467,45 @@ _canon<T, Ts...>;
 
 static_assert(std::same_as<canonicalized<value_t<0>, value_t<-1>, value_t<-1>, value_t<1>>, list<value_t<-1>, value_t<0>, value_t<1>>>);
 ```
+
+# Appendix B: `__PRETTY_FUNCTION__` instability
+
+This example is available at https://godbolt.org/z/ojb9TnE99 .
+
+Consider the following program, contributed by Barry Revzin:
+
+```cpp
+#include <print>
+
+enum class E;
+template <E> struct C;
+#ifdef DEFINED
+enum class E { hi, gašper };
+#endif
+
+template <class T>
+void show() {
+    std::print("{}\n", __PRETTY_FUNCTION__);
+}
+
+int main() {
+    show<C<E(0)>>();
+}
+```
+
+When compiled with `-std=c++23`, it yields the following output:
+```
+void show() [with T = C<(E)0>]
+```
+
+However, with `-std=c++23 -DDEFINED`, it produces a different one:
+
+```
+void show() [with T = C<E::hi>]
+```
+
+This makes external names of types incorporating enums as non-type template
+arguments have inconsistent between translation units.
 
 ---
 references:
