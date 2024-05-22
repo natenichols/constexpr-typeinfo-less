@@ -1,7 +1,7 @@
 ---
 title: Standardized Constexpr Type Ordering
-document: D2830R4
-date: 2024-04-17
+document: P2830R4
+date: 2024-05-22
 audience: EWG
 author:
   - name: Nate Nichols
@@ -16,7 +16,7 @@ toc: true
 As of C++23, `std::type_info` provides a stable but _unspecified_ and
 non-`constexpr` order on types.
 
-This paper explores a standardized ordering of types in C++, and possible syntaxes for it.
+This paper explores a standardized ordering of types in C++.
 
 This paper is split into two parts:
 
@@ -47,6 +47,9 @@ This paper is split into two parts:
     - incorporated feedback from the EWG discussion on May 17th
     - Added example of `__PRETTY_FUNCTION__` differences from Barry Revzin
       (thanks!)
+    - Incorporated the fact that EWG decided that the syntax is reasonable,
+      pending LEWG review.
+    - Did a further pass on properly defining `SORT_KEY(x, y)`
     
      
 # Motivation
@@ -118,6 +121,19 @@ those; this induces an order on all entities that can be template arguments.
 Crucially, also consider the interactions with [@P1985R3] and [@P2841R1], which
 introduce `concept` and `variable-template` arguments.
 
+### Archetypal example: canonicalized typelist
+
+(Kept short because further examples give concrete needs).
+
+```cpp
+struct A {};
+struct B {};
+
+// we want some way to enable
+static_assert(std::is_same_v<typeset<A, B>, typeset<B, A, A>>);
+```
+
+Furthermore, we need the order to be the same in different compilation units.
 
 ### Canonicalizing policy-based libraries
 
@@ -329,10 +345,11 @@ the type order manually).
 # Design discussion
 
 The first two revisions of this proposal tried to construct a full type
-ordering from first principles. This is still included as the alternative
-proposal, should EWG want us to go that way.
+ordering from first principles; EWGi then requested we change to an
+implementation-defined order (use the mangler), but EWG subsequently reversed
+that decision.
 
-## Why implementation-defined?
+## Pros of implementation-defined
 
 The overwhelming response of people working on implementations, as well as
 people sitting on the Itanium ABI standards committee, was that this is a
@@ -385,6 +402,21 @@ something equivalently useful is the same forum as the current ABI discussion
 forums; it seems the appropriate venue to standardize the ordering anyay,
 without making WG21 duplicate the work.
 
+## Pros of completely defined order (chosen design)
+
+### Static analyzers do not have a single backend
+
+This proved decisive. Since static analyzers and compilers that produce
+intermediate representations before choosing a backend are part of the
+ecosystem, it is important to be consistent and not rely on a particular
+mangler.
+
+### `consteval` should be as portable as possible
+
+The abstract machine used at constant evaluation time has far fewer parameters
+than the runtime one. We should keep them to a minimum, and type ordering is
+not a necessary parameter. We should keep implementations consistent.
+
 ## Desirable properties of `TYPE_ORDER(x, y)`
 
 ### Stability
@@ -416,14 +448,15 @@ Since this paper requires that the order not differ between programs, exposing
 this as a normative requirement is impossible without tightening this
 wording, which is outside the scope of this paper.
 
+At least at present, some implementations decide this order at program startup
+time, so this is not in general implementable.
+
 ### Self-consistency
 
 The ordering should be self-consistent, that is, for all possible template
 arguments `T`, `U`, and any unary template `some_template`:
 
 `TYPE_ORDER(T, U) == TYPE_ORDER(some_template<T>, some_template<U>)`.
-
-Implementations are encouraged to satisfy this principle, but are not required to.
 
 ### Reflection compatibility
 
@@ -483,7 +516,7 @@ explores the trade-offs in syntax choice.
 
 The authors recommend the first option.
 
-### Option 1 (preferred): a variable template `std::type_order_v<T, U>`
+### Option 1 (chosen by EWG): a variable template `std::type_order_v<T, U>`
 
 Specifally:
 
@@ -554,7 +587,7 @@ ordering function, which is a bit less intuitive than just `decltype` or just
 the template parameter that we already have.
 
 
-### Option 4: heterogeneous `constexpr std::type_identity::operator<=>`
+### Option 4 (bad): heterogeneous `constexpr std::type_identity::operator<=>`
 
 Specifically:
 
@@ -580,7 +613,7 @@ constexpr std::strong_ordering operator<=>(std::type_identity<T>, std::type_iden
 - too cute?
 - doesn't work for nontypes
 
-### Option 5: `constexpr std::__lift<arg>::operator<=>`
+### Option 5 (bad): `constexpr std::__lift<arg>::operator<=>`
 
 This option means we add `template <universal template> struct __lift {};` into
 `<type_traits>` and define `operator<=>` for it.
@@ -598,6 +631,8 @@ This option means we add `template <universal template> struct __lift {};` into
 
 
 ### Non-Option: `constexpr bool std::type_info::before()`
+
+(Included because it's a common question.)
 
 It would be nice, but alas, operates on _cv-unqualified_ versions of the
 referenced type, so it's not sufficient.
@@ -649,7 +684,7 @@ is about the definition of the order.
 The concerns raised by the implementers so far have been mostly around having
 to bring the name mangler from the backend and make it accessible to the
 compiler front-end, because the obvious implementation is to define the
-comparison result on the mangled type strings.
+comparison result on the mangled type strings; this option has been rejected by EWG.
 
 Making this order match up with `type_info::before` is a matter of bringing the
 name mangler for the correct platform to the frontend.
@@ -659,101 +694,269 @@ violation, as the name mangling for a given platform is analogous to other
 platform properties, such as the size and alignment of pointers.
 
 If a platform does not have a name mangling strategy, _any_ name mangling
-scheme will still result in a standards-conforming implementation.
+scheme will still result in a standards-conforming implementation; however,
+after much discussion, it seems a better direction to completely define the
+order in the standard itself.
 
+# Proposal
 
-# Proposed Wording
+This section sets out an approach for defining an ordering of all compile-time
+entities; that is, the definition of `SORT_KEY(X)` for a given _cv_-qualified
+type `X`; and the comparison function between these sort-key-tuples.
 
-In [compare.syn]{.sref}, add
-
-::: add
-
-```cpp
-template <class T, class U>
-struct type_order : integral_constant<strong_ordering, @_see below_@> {};
-template <class T, class U>
-inline constexpr strong_ordering type_order_v = type_order<T, U>::value;
-```
-
-:::
-
-At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
-
-:::add
-
-**17.11.7: Type Ordering**
-
-[1]{.pnum} For (possibly _cv_-qualified) types _X_ and _Y_, the expression
-`@_TYPE_ORDER(X, Y)_@` is a constant expression [expr.const]{.sref} whose
-implementation-defined value is the value of an enumerator of
-`strong_ordering`, subject to the following constraints:
-
-- [1.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
-- [1.2]{.pnum} otherwise,
-  - [1.2.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE_ORDER_@(Y, X)` is `strong_ordering::greater` (_antisymmetry_)
-  - [1.2.2]{.pnum} for all (possibly _cv_-qualified) types _Z_,
-    if both `@_TYPE_ORDER(X, Y)_@` and `@_TYPE_ORDER(Y, Z)_@` are `strong_ordering::less`,
-    then `@_TYPE_ORDER(X, Z)_@` is also `strong_ordering::less` (_transitivity_)
-
-[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE_ORDER(X, Y)_@>`.
-
-[3]{.pnum} _Recommended practice_: if `typeid(X).before(typeid(Y))`, then `@_TYPE_ORDER(X, Y)_@` should be `strong_ordering::less` if such an implementation is possible on a given platform. 
-[_Note:_ equivalently: `@_TYPE_ORDER(X, Y)_@` should be a finer order than the one induced by `type_info::before`; `typeid(X)` ignores _cv_ and reference qualifiers. -- _end note_] 
-
-:::
-
-# Acknowledgements
-
-Thanks to all of the following:
-
-  - Davis Herring for his suggestions on ordering non-type template parameters.
-  - Ville Voutilainen for his critique of examples, and providing a simple way
-    of explaining the motivation
-  - Peter Dimov for a helpful anecdote, now in the FAQ.
-  - Erich Keane for for pushing us back to the "implementation-defined" territory.
-  - Jens Maurer for his thorough review of the initial proposed wording and his guidance.
-
-
-# Appendix: full order proposal (former alternative)
-
-This is a poor first attempt at figuring out what it would take to specify this
-in the C++ standard. It seems like "implementation-defined" is a better
-approach.
+**Note to reviewers:** _any_ well-defined order will satisfy the design
+requirements; the chief design element here is whether we have achieved a
+well-ordering, not what exactly it is. The only other considration is whether
+we can evolve the order as we introduce new entities into the language.
 
 ## Approach
 
-1. We define a **lowering to a _key-tuple_** for every entity in the language.
-2. The order is then defined on these _key-tuples_.
+1. We define a **lowering to a _sort-key-tuple_** for every entity in the language.
+2. The order is then defined on these _sort-key-tuples_.
 
-## Structure of key-tuples
+The entities we must order are:
 
-Every _key-tuple_ is of the form `(@_element_@...)`.
+1. namespaces
+    1. the global namespace
+    2. named namespaces
+    3. the anonymous namespace
+2. cv-qualified types
+    1. scalar types
+    2. array types
+    3. class and union types
+    4. class and union template specializations
+    5. anonymous versions of all of the above
+    6. function types
+3. templates
+    1. function templates
+    2. class templates
+    3. variable templates
+    4. concepts
+    5. type alias templates
+    6. deduction guides
+4. partial template specializations
+    1. partial function template specializations
+    2. partial class template specializations
+    3. partial variable template specializations
+5. parameters
+    1. runtime-parameters
+    2. type-parameters
+    3. constant-parameters
+    4. type-template parameters
+    5. concept-parameters
+    6. variable-template parameters
+    7. parameter packs
+6. constants
+    1. integral constants
+    2. floating-point constants
+    3. pointer and reference constants
+        1. to functions
+        2. to named entities of static storage duration
+        3. to expressions
+    3. class-type constants
+        1. lambda literals
+        2. constants of compound types usable as template arguments
+7. expressions
+
+## Structure of sort-key-tuples
+
+Every _sort-key-tuple_ is of the form `(@_element_@...)`.
 
 where an element is one of:
 
   - _atom_ (see [atoms](#atoms))
-  - _key-tuple_
+  - _name_
+  - _constant_
+  - _sort-key-tuple_
 
 These tuples are then ordered lexicographically (ties broken in favor of
-shorter tuple), atoms before tuples.
+shorter tuple), atoms first, then names, then constants, then other _sort-key-tuples_.
 
 Let us name this transformation as `sort_key(entity)`.
 
-The rest of the paper is concerned with defining this transformation.
+The rest of the design is concerned with defining this transformation.
 
-## Named Scopes
-A type is ordered by appending `sort_key(...)` to the named scope it is declared
-in. The following are _named scopes_:
+## sort-scopes
 
-1. namespaces
-2. classes
-3. functions
-4. lambdas
-5. concepts
+A sort-key for most entities is of the form
 
-Starting with the global namespace, `sort_key(global) = ()`. Any type
-`T` declared in the global namespace shall have a defined `sort_key` operation
-that resolves to `(sort_key(T))`.
+```
+sort_key(x) = (sort_key(sort-scope(x)), x-dependent-elements...)
+```
+
+This section deals with the sort-scope of an entity.
+
+To deal with anonymous types and templated entities like hidden friends, we
+have to observe more than just the namespace and class the entity is declared
+in; we must also observe anything at all that could contribute to the
+declaration, such as template parameters and arguments of partial and full
+template specializations of both class and function templates,
+alias templates, concepts, their parameter numbers (in case of default
+arguments), and so on. After that, we must make special allowances for entities
+that cannot be influenced by such surroundings, such as forward declaratios of
+named classes.
+
+### Every declaration introduces a sort-scope.
+
+- Every declaration of an anonymous entity is ordered lexicographically within
+  its sort-scope.
+- Ties are not broken; there should be no conflicts, as all the context for a
+  given _sort-key(x)_ should be provided by the sort-scope of the declaration.
+  (notably - all relevant parameters *and* their values should be part of the
+  sort-key for a given declaration of an anonmous entity)
+- most named entities are also ordered within their sort-scope, with the
+  notable exception of named class types, which are ordered by their fully
+  qualified name.
+
+## Namespaces
+
+This section deals with namespaces and their sort-keys.
+
+### The global namespace
+
+Let _x_ be the global namespace.
+
+```
+sort_key(x) := (_namespace_, _global-namespace_)
+sort_scope(x) := ()
+```
+
+### Named namespaces
+
+Every namespace (except for the global namespace) has a parent namespace, which
+is its immediately enclosing namespace.
+
+let _x_ be some named namespace with simple-name "namespace_name".
+
+```
+sort_key(x) := (sort_key(parent_namespace), _namespace_, "namespace_name")
+sort_scope(x) := sort_key(parent_namespace)
+```
+
+### The anonymous namespace
+
+The anonymous namespace sorts after all the other namespaces.
+
+Let _x_ be some anonymous namespace, with parent namespace `parent_namespace`.
+
+```
+sort_key(x) := (sort_key(parent_namespace), _namespace_, _anonymous_)
+sort_scope(x) := sort_key(parent_namespace)
+```
+
+### Namespace examples
+
+TODO
+
+## cv-qualified types
+
+### Qualifiers
+
+Qualifiers are each assigned a score
+
+```
+&: 1
+&&: 2
+const: 3
+volatile: 6
+```
+and ordering lowest-first after summing them.
+
+Therefore, for an unqualified type `T`, the order of all possible qualified
+types would be:
+
+```cpp
+0  T
+1  T &
+2  T &&
+3  T const
+4  T const &
+5  T const &&
+6  T volatile
+7  T volatile &
+8  T volatile &&
+9  T const volatile
+10 T const volatile &
+11 T const volatile &&
+```
+
+This is accomplished by putting the qualifier sequence into the tuple just
+after the typename.
+
+For a given type `T`, we define
+
+```
+qualifier_sequence(T const volatile &) := const volatile &
+qualifier_sequence(T const volatile &&) := const volatile &&
+```
+
+so that we can put it into the `sort_key` tuple later.
+
+### Scalar Types
+
+All scalar types are built-in types, except for user-defined enumerations,
+which should be ordered as if they were class types.
+
+Simple scalar types (everything in this section but function types and pointer
+types) are not ordered by "name" - they are ordered using the rules in the
+table. All atoms are still ordered before them, any name is ordered after them,
+as are all sort-key-tuples.
+
+This is because some of the built-in types do not have names, only type aliases
+(such as `decltype(nullptr)`), and we do not order types by their aliases.
+
+This causes any built-in scalar types to be ordered before any compound types.
+
+In case of ties, built-in types with simple names shall be ordered before any
+nameless types.
+
+In particular, scalar types shall be ordered as follows:
+
+1. `void` comes first because it's not reifiable,
+2. the type of `std::nullptr_t` as the first monostate
+3. any other monostates, if added, sorted alphabetically by their common names
+   (to be specified explicitly if added)
+4. `bool` as the first bi-state
+5. any other bi-states, if added, sorted alphabetically.
+6. Raw-memory types (`char`, `signed char`, `unsigned char`) (std::byte is an
+   enumeration in `std` so it falls under different rules)
+7. Integral types in order of size, signed before unsigned (`short`, `unsigned
+   short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`,
+   `unsigned long long`, followed by any implementation-defined wider integral
+   types like `__int128_t` etc.). Intersperse any implementation-defined
+   built-in integral types as needed between the above following those rules.
+8. Any remaining character types that are not type-aliases of any of the above,
+   including unicode, according to the following rules: smallest first,
+   unicode-specific variants after non-unicode variants.
+9. Floating-point types, in order of size. In case of ties, `float`, `double`
+   and `long double` come before any other floating point types of the same
+   size. Any decimal-floating-point types come after binary-floating-point
+   types; if multiple floating point types of the same bit-length exist, break
+   ties by the bit-size of the exponent, lower first.
+10. Implementation-defined vector-register types, ordered by the the integral
+    type they consist of, and then by bit-size (example: `u8x16` from gcc's
+    documentation).
+11. Function types (internally ordered by rules in section [Function Types])
+12. Pointer types (internally ordered by their pointee-type)
+13. Pointer-to-member types (internally ordered by pointee-type)
+
+### Array Types
+
+TODO: this section is not complete.
+
+Array types shall be ordered after scalar types but before class types.
+
+Given a non-array type `T`
+
+```
+sort_key(T[])  := (sort_key(T), [])
+sort_key(T[n]) := (sort_key(T), [n])
+sort_key(T[][n]) := (sort_key(T), [], [n])
+```
+
+
+# Old design that needs to be revamped
+
 
 ### Example 1: `class foo` is declared in `struct bar`: 
 
@@ -793,14 +996,21 @@ baz` precedes `namespace foo`.
 
 The atoms of _key-tuples_ are ordered as follows:
 
-1. kinds (see [kinds](#kinds))
-2. simple names (including empty string) (see [names](#names))
+1. _global-namespace_
+2. _anonymous_
+2. kinds (see [kinds](#kinds))
 3. qualifiers (see [qualifiers](#qualifiers))
 4. `[]` (array of unknown bound)
 5. `[n]` (array of known bound n) (ordered by `n` internally)
 6. `*` (pointer)
 7. ellipsis (`...` in `f(...)`)
 8. parameter pack (`...` in `typename...`)
+
+## identifiers
+
+These are simple names (identifiers).
+
+Examples: "pair", "string", "unique_ptr", "std", "hashmap", "absl".
 
 ## Kinds
 
@@ -830,20 +1040,6 @@ namespace foo::bar { struct baz; }
 ```
 
 `foo`, `bar` and `baz` are such atomic identifiers.
-
-#### Anonymous Namespace
-
-Anonymous namespaces shall be represented with the ! character, as it cannot
-be represented by the empty string and cannot collide with any user defined
-names;
-
-Example:
-
-```cpp
-namespace a { namespace { struct s; } }
-
-sort_key(a::s) = ((namespace, a), (namespace, "!"), (type, s, ))
-```
 
 #### Unnamed entities
 
@@ -942,104 +1138,11 @@ The `sort_key` of a type is `(type, <identifier>, <qualifiers>)`.
 
 The `<identifier>` bit is a bit complicated, so let's deal with the qualifiers first.
 
-Note: any name-scopes the `type` is declared in are part of the parent _key-tuple_. The `identifier` portion is complicated because of possible template arguments for types that are template specializations.
+Note: any name-scopes the `type` is declared in are part of the parent
+_key-tuple_. The `identifier` portion is complicated because of possible
+template arguments for types that are template specializations.
 
-#### Qualifiers
 
-Qualifiers are each assigned a score
-
-```
-&: 1
-&&: 2
-const: 3
-volatile: 6
-```
-and ordering lowest-first after summing them.
-
-Therefore, for an unqualified type `T`, the order of all possible qualified
-types would be:
-
-```cpp
-0  T
-1  T &
-2  T &&
-3  T const
-4  T const &
-5  T const &&
-6  T volatile
-7  T volatile &
-8  T volatile &&
-9  T const volatile
-10 T const volatile &
-11 T const volatile &&
-```
-
-The remainder of the paper concerns itself only with unqualified types.
-
-### Ordering Scalar Types
-
-All scalar types are built-in types, except for enumerations, which should be
-ordered according to their namespaced names.
-
-Unfortunately, some of the built-in types do not have names, only type aliases
-(such as `decltype(nullptr)`).
-
-The intention is for built-in scalar types to be ordered before any compound
-types.
-
-Built-in types with simple names should be ordered before any types that
-reference other types.
-
-In particular, scalar types shall be ordered as follows:
-
-1. `void` comes first because it's not reifiable,
-2. the type of `std::nullptr_t` as the first monostate
-3. any other monostates, if added, sorted alphabetically by their common names (to be specified explicitly if added)
-4. `bool` as the first bi-state
-5. any other bi-states, if added, sorted alphabetically.
-6. Raw-memory types (`char`, `signed char`, `unsigned char`) (std::byte is an enumeration in `std` so it falls under different rules)
-7. Integral types in order of size, signed before unsigned (`short`, `unsigned
-   short`, `int`, `unsigned int`, `long`, `unsigned long`, `long long`,
-   `unsigned long long`, followed by any implementation-defined wider integral
-   types like `__int128_t` etc.). Intersperse any implementation-defined
-   built-in integral types as needed between the above.
-8. Any remaining character types that are not type-aliases of any of the above,
-   including unicode, according to the following rules: smallest first,
-   unicode-specific variants after non-unicode variants.
-9. Floating-point types, in order of size. In case of ties, `float`, `double`
-   and `long double` come before any floating point types.
-10. Function types (internally ordered by rules in section [Function Types])
-11. Pointer types (internally ordered by their pointee-type)
-12. Pointer-to-member types (internally ordered by pointee-type)
-
-Class types shall be ordered according to the rules below, see [Ordering Compound Types]
-
-### Ordering Array Types
-
-Array types shall be ordered after scalar types but before class types.
-
-The `sort_key(T[]) = ([], sort_key(T))`  and the `sort_key(T[n]) = ([n], sort_key(T))`.
-
-The intention is to order arrays first internally by element type, then by
-rank, then by rank bounds, lowest first. Arrays of unknown bounds come before
-arrays of known bounds.
-
-So the order of the following, for a given type T:
-
-```cpp
-T[]
-T[10]
-T[11]
-T[][2]
-T[10][2]
-T[3][2]
-```
-
-shall be ordered `T[] < T[10] < T[11] < T[][2] < T[3][2] < T[10][2]`, and
-
-`sort_key(T[0]) = (type, ([], (type, T, )))`
-
-`sort_key(T[10][2]) = (type, ([2], sort_key(T[10]))) = (type, ([2], (type, ([10], (type, T, ))))`
 
 ### Ordering Class Types
 
@@ -1154,12 +1257,12 @@ The above would be ordered `sort_key(Apple<Banana, Banana>)`,
 
 Function types shall be ordered by 
 
-1. Return type
-2. Parameters, lexicographically.
+1. Parameters, lexicographically.
+2. Return type, if known from the declaration.
 
 The `sort_key` of a function shall be defined as:
 
-`sort_key(<function>) = (function, <name>, sort_key(<return type>), (sort_key(<parameter>)...))`
+`sort_key(<function>) = (function, <name>, (sort_key(<parameter>)...), sort_key(<return type>))`
 
 ```cpp
 void foo(int i);
@@ -1323,6 +1426,82 @@ must be comparable with other types.
 Concepts shall be ordered first by name, then by template arguments.
 
 `sort_key(f<int>) = (concept, (f, (type, int), (lambda, 0)))`
+
+
+# Proposed Wording
+
+(The wording is not complete; the design will be transcribed here once approved by EWG)
+
+In [compare.syn]{.sref}, add
+
+::: add
+
+```cpp
+template <class T, class U>
+struct type_order : integral_constant<strong_ordering, @_see below_@> {};
+template <class T, class U>
+inline constexpr strong_ordering type_order_v = type_order<T, U>::value;
+```
+
+:::
+
+At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
+
+:::add
+
+**17.11.7: Type Ordering**
+
+[1]{.pnum} For (possibly _cv_-qualified) types _X_ and _Y_, the expression
+`@_TYPE_ORDER(X, Y)_@` is a constant expression [expr.const]{.sref} whose
+value is the value of an enumerator of `strong_ordering`, subject to the
+following constraints:
+
+- [1.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
+- [1.2]{.pnum} otherwise, 
+  - [1.2.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE_ORDER(Y, X)_@` is `strong_ordering::greater` (_antisymmetry_)
+  - [1.2.2]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_SORT_KEY(X)_@ < @_SORT_KEY(Y)_@`
+
+
+[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE_ORDER(X, Y)_@>`.
+[3]{.pnum} `@_SORT_KEY_(X)_@`, for a given _cv_-qualified type `X` is a _sort-key-tuple_ where every element is one of:
+    - [3.1] _sort-key-atom_, one of
+        - [3.1.1] "namespace"
+        - [3.1.2] "scalar"
+        - [3.1.3] "enum"
+        - [3.1.4] "union"
+        - [3.1.5] "struct"
+        - [3.1.7] "template"
+        - [3.1.8] "concept"
+        - [3.1.9] "requirement"
+        - [3.1.10] "noexcept"
+        - [3.1.11] "qual"
+        - [3.1.12] "constant"
+        - [3.1.13] "reference"
+        - [3.1.14] "pointer"
+        - [3.1.15] "anonymous"
+        - [3.1.16] "expression"
+        - [3.1.17] "default_argument"
+    - [3.2] _name_
+    - [3.3] a constant
+        - [3.3.1] _signed integral value_
+        - [3.3.2] _floating point value_
+        - [3.3.3] _lambda-literal_
+    - [3.5] a _sort-key-tuple_
+
+:::
+
+# Acknowledgements
+
+Thanks to all of the following:
+
+  - Davis Herring for his suggestions on ordering non-type template parameters.
+  - Ville Voutilainen for his critique of examples, and providing a simple way
+    of explaining the motivation
+  - Peter Dimov for a helpful anecdote, now in the FAQ.
+  - Erich Keane for for pushing us back to the "implementation-defined" territory.
+  - Jens Maurer for his thorough review of the initial proposed wording and his guidance.
+
+
 
 
 

@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2024-05-22" />
+  <title>Standardized Constexpr Type Ordering</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+      div.csl-block{margin-left: 1.5em;}
+      ul.task-list{list-style: none;}
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+          color: #aaaaaa;
+        }
+      pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+      div.sourceCode
+        {  background-color: #f6f8fa; }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      code span { } /* Normal */
+      code span.al { color: #ff0000; } /* Alert */
+      code span.an { } /* Annotation */
+      code span.at { } /* Attribute */
+      code span.bn { color: #9f6807; } /* BaseN */
+      code span.bu { color: #9f6807; } /* BuiltIn */
+      code span.cf { color: #00607c; } /* ControlFlow */
+      code span.ch { color: #9f6807; } /* Char */
+      code span.cn { } /* Constant */
+      code span.co { color: #008000; font-style: italic; } /* Comment */
+      code span.cv { color: #008000; font-style: italic; } /* CommentVar */
+      code span.do { color: #008000; } /* Documentation */
+      code span.dt { color: #00607c; } /* DataType */
+      code span.dv { color: #9f6807; } /* DecVal */
+      code span.er { color: #ff0000; font-weight: bold; } /* Error */
+      code span.ex { } /* Extension */
+      code span.fl { color: #9f6807; } /* Float */
+      code span.fu { } /* Function */
+      code span.im { } /* Import */
+      code span.in { color: #008000; } /* Information */
+      code span.kw { color: #00607c; } /* Keyword */
+      code span.op { color: #af1915; } /* Operator */
+      code span.ot { } /* Other */
+      code span.pp { color: #6f4e37; } /* Preprocessor */
+      code span.re { } /* RegionMarker */
+      code span.sc { color: #9f6807; } /* SpecialChar */
+      code span.ss { color: #9f6807; } /* SpecialString */
+      code span.st { color: #9f6807; } /* String */
+      code span.va { } /* Variable */
+      code span.vs { color: #9f6807; } /* VerbatimString */
+      code span.wa { color: #008000; font-weight: bold; } /* Warning */
+      code.diff {color: #898887}
+      code.diff span.va {color: #006e28}
+      code.diff span.st {color: #bf0303}
+  </style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <link href="data:image/x-icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">Standardized Constexpr Type
+Ordering</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P2830R4</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2024-05-22</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      EWG<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      Nate Nichols<br>&lt;<a href="mailto:natenichols@cox.net" class="email">natenichols@cox.net</a>&gt;<br>
+      Gašper Ažman<br>&lt;<a href="mailto:gasper.azman@gmail.com" class="email">gasper.azman@gmail.com</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h1 id="toctitle">Contents</h1>
+<ul>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract<span></span></a></li>
+<li><a href="#revision-history" id="toc-revision-history"><span class="toc-section-number">2</span> Revision
+History<span></span></a></li>
+<li><a href="#motivation" id="toc-motivation"><span class="toc-section-number">3</span> Motivation<span></span></a>
+<ul>
+<li><a href="#motivating-examples" id="toc-motivating-examples"><span class="toc-section-number">3.1</span> Motivating
+Examples<span></span></a>
+<ul>
+<li><a href="#archetypal-example-canonicalized-typelist" id="toc-archetypal-example-canonicalized-typelist"><span class="toc-section-number">3.1.1</span> Archetypal example:
+canonicalized typelist<span></span></a></li>
+<li><a href="#canonicalizing-policy-based-libraries" id="toc-canonicalizing-policy-based-libraries"><span class="toc-section-number">3.1.2</span> Canonicalizing policy-based
+libraries<span></span></a></li>
+<li><a href="#canonicalized-variant" id="toc-canonicalized-variant"><span class="toc-section-number">3.1.3</span> Canonicalized
+variant<span></span></a></li>
+<li><a href="#canonicalized-tuple" id="toc-canonicalized-tuple"><span class="toc-section-number">3.1.4</span> Canonicalized
+tuple<span></span></a></li>
+<li><a href="#api-stability" id="toc-api-stability"><span class="toc-section-number">3.1.5</span> API
+stability<span></span></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#design-discussion" id="toc-design-discussion"><span class="toc-section-number">4</span> Design discussion<span></span></a>
+<ul>
+<li><a href="#pros-of-implementation-defined" id="toc-pros-of-implementation-defined"><span class="toc-section-number">4.1</span> Pros of
+implementation-defined<span></span></a>
+<ul>
+<li><a href="#abi-specifications-already-have-to-do-this-work" id="toc-abi-specifications-already-have-to-do-this-work"><span class="toc-section-number">4.1.1</span> ABI specifications already have
+to do this work<span></span></a></li>
+<li><a href="#the-c-standard-doesnt-own-cross-compilation-unit-semantics" id="toc-the-c-standard-doesnt-own-cross-compilation-unit-semantics"><span class="toc-section-number">4.1.2</span> The C++ standard doesn’t own
+cross-compilation-unit semantics<span></span></a></li>
+<li><a href="#any-new-proposal-to-c-would-have-to-consider-the-ordering" id="toc-any-new-proposal-to-c-would-have-to-consider-the-ordering"><span class="toc-section-number">4.1.3</span> Any new proposal to C++ would
+have to consider the ordering<span></span></a></li>
+<li><a href="#type_orderx-y-already-has-public-facing-api-implications" id="toc-type_orderx-y-already-has-public-facing-api-implications"><span class="toc-section-number">4.1.4</span>
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> already has
+public-facing API implications<span></span></a></li>
+</ul></li>
+<li><a href="#pros-of-completely-defined-order-chosen-design" id="toc-pros-of-completely-defined-order-chosen-design"><span class="toc-section-number">4.2</span> Pros of completely defined order
+(chosen design)<span></span></a>
+<ul>
+<li><a href="#static-analyzers-do-not-have-a-single-backend" id="toc-static-analyzers-do-not-have-a-single-backend"><span class="toc-section-number">4.2.1</span> Static analyzers do not have a
+single backend<span></span></a></li>
+<li><a href="#consteval-should-be-as-portable-as-possible" id="toc-consteval-should-be-as-portable-as-possible"><span class="toc-section-number">4.2.2</span>
+<code class="sourceCode default">consteval</code> should be as portable
+as possible<span></span></a></li>
+</ul></li>
+<li><a href="#desirable-properties-of-type_orderx-y" id="toc-desirable-properties-of-type_orderx-y"><span class="toc-section-number">4.3</span> Desirable properties of
+<code class="sourceCode default">TYPE_ORDER(x, y)</code><span></span></a>
+<ul>
+<li><a href="#stability" id="toc-stability"><span class="toc-section-number">4.3.1</span> Stability<span></span></a></li>
+<li><a href="#free-standing" id="toc-free-standing"><span class="toc-section-number">4.3.2</span>
+Free-standing<span></span></a></li>
+<li><a href="#consistency-with-type_infobefore" id="toc-consistency-with-type_infobefore"><span class="toc-section-number">4.3.3</span> Consistency with
+<code class="sourceCode default">type_info::before()</code><span></span></a></li>
+<li><a href="#self-consistency" id="toc-self-consistency"><span class="toc-section-number">4.3.4</span>
+Self-consistency<span></span></a></li>
+<li><a href="#reflection-compatibility" id="toc-reflection-compatibility"><span class="toc-section-number">4.3.5</span> Reflection
+compatibility<span></span></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#proposal" id="toc-proposal"><span class="toc-section-number">5</span> Proposal<span></span></a>
+<ul>
+<li><a href="#semantics" id="toc-semantics"><span class="toc-section-number">5.1</span> Semantics<span></span></a></li>
+<li><a href="#syntax" id="toc-syntax"><span class="toc-section-number">5.2</span> Syntax<span></span></a>
+<ul>
+<li><a href="#option-1-chosen-by-ewg-a-variable-template-stdtype_order_vt-u" id="toc-option-1-chosen-by-ewg-a-variable-template-stdtype_order_vt-u"><span class="toc-section-number">5.2.1</span> Option 1 (chosen by EWG): a
+variable template
+<code class="sourceCode default">std::type_order_v&lt;T, U&gt;</code><span></span></a></li>
+<li><a href="#option-2-variable-template-stdentity_orderingx-y" id="toc-option-2-variable-template-stdentity_orderingx-y"><span class="toc-section-number">5.2.2</span> Option 2: variable template
+<code class="sourceCode default">std::entity_ordering&lt;X, Y&gt;</code><span></span></a></li>
+<li><a href="#option-3-reflection" id="toc-option-3-reflection"><span class="toc-section-number">5.2.3</span> Option 3:
+reflection<span></span></a></li>
+<li><a href="#option-4-bad-heterogeneous-constexpr-stdtype_identityoperator" id="toc-option-4-bad-heterogeneous-constexpr-stdtype_identityoperator"><span class="toc-section-number">5.2.4</span> Option 4 (bad): heterogeneous
+<code class="sourceCode default">constexpr std::type_identity::operator&lt;=&gt;</code><span></span></a></li>
+<li><a href="#option-5-bad-constexpr-std__liftargoperator" id="toc-option-5-bad-constexpr-std__liftargoperator"><span class="toc-section-number">5.2.5</span> Option 5 (bad): <code class="sourceCode default">constexpr std::__lift&lt;arg&gt;::operator&lt;=&gt;</code><span></span></a></li>
+<li><a href="#non-option-constexpr-bool-stdtype_infobefore" id="toc-non-option-constexpr-bool-stdtype_infobefore"><span class="toc-section-number">5.2.6</span> Non-Option: <code class="sourceCode default">constexpr bool std::type_info::before()</code><span></span></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#faq" id="toc-faq"><span class="toc-section-number">6</span> FAQ<span></span></a>
+<ul>
+<li><a href="#why-should-this-be-standardized" id="toc-why-should-this-be-standardized"><span class="toc-section-number">6.1</span> Why should this be
+standardized?<span></span></a></li>
+<li><a href="#why-not-wait-for-reflection" id="toc-why-not-wait-for-reflection"><span class="toc-section-number">6.2</span> Why not wait for
+reflection?<span></span></a></li>
+<li><a href="#but-couldnt-this-be-done-faster-with-reflection" id="toc-but-couldnt-this-be-done-faster-with-reflection"><span class="toc-section-number">6.3</span> But couldn’t this be done faster
+with reflection?<span></span></a></li>
+</ul></li>
+<li><a href="#implementability" id="toc-implementability"><span class="toc-section-number">7</span>
+Implementability<span></span></a></li>
+<li><a href="#proposal-1" id="toc-proposal-1"><span class="toc-section-number">8</span> Proposal<span></span></a>
+<ul>
+<li><a href="#approach" id="toc-approach"><span class="toc-section-number">8.1</span> Approach<span></span></a></li>
+<li><a href="#structure-of-sort-key-tuples" id="toc-structure-of-sort-key-tuples"><span class="toc-section-number">8.2</span> Structure of
+sort-key-tuples<span></span></a></li>
+<li><a href="#sort-scopes" id="toc-sort-scopes"><span class="toc-section-number">8.3</span> sort-scopes<span></span></a>
+<ul>
+<li><a href="#every-declaration-introduces-a-sort-scope." id="toc-every-declaration-introduces-a-sort-scope."><span class="toc-section-number">8.3.1</span> Every declaration introduces a
+sort-scope.<span></span></a></li>
+</ul></li>
+<li><a href="#namespaces" id="toc-namespaces"><span class="toc-section-number">8.4</span> Namespaces<span></span></a>
+<ul>
+<li><a href="#the-global-namespace" id="toc-the-global-namespace"><span class="toc-section-number">8.4.1</span> The global
+namespace<span></span></a></li>
+<li><a href="#named-namespaces" id="toc-named-namespaces"><span class="toc-section-number">8.4.2</span> Named
+namespaces<span></span></a></li>
+<li><a href="#the-anonymous-namespace" id="toc-the-anonymous-namespace"><span class="toc-section-number">8.4.3</span> The anonymous
+namespace<span></span></a></li>
+<li><a href="#namespace-examples" id="toc-namespace-examples"><span class="toc-section-number">8.4.4</span> Namespace
+examples<span></span></a></li>
+</ul></li>
+<li><a href="#cv-qualified-types" id="toc-cv-qualified-types"><span class="toc-section-number">8.5</span> cv-qualified
+types<span></span></a>
+<ul>
+<li><a href="#qualifiers" id="toc-qualifiers"><span class="toc-section-number">8.5.1</span> Qualifiers<span></span></a></li>
+<li><a href="#scalar-types" id="toc-scalar-types"><span class="toc-section-number">8.5.2</span> Scalar
+Types<span></span></a></li>
+<li><a href="#array-types" id="toc-array-types"><span class="toc-section-number">8.5.3</span> Array
+Types<span></span></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#old-design-that-needs-to-be-revamped" id="toc-old-design-that-needs-to-be-revamped"><span class="toc-section-number">9</span> Old design that needs to be
+revamped<span></span></a>
+<ul>
+<li><a href="#example-1-class-foo-is-declared-in-struct-bar" id="toc-example-1-class-foo-is-declared-in-struct-bar"><span class="toc-section-number">9.0.1</span> Example 1:
+<code class="sourceCode default">class foo</code> is declared in
+<code class="sourceCode default">struct bar</code>:<span></span></a></li>
+<li><a href="#example" id="toc-example"><span class="toc-section-number">9.0.2</span> Example:<span></span></a></li>
+<li><a href="#atoms" id="toc-atoms"><span class="toc-section-number">9.1</span> Atoms<span></span></a></li>
+<li><a href="#identifiers" id="toc-identifiers"><span class="toc-section-number">9.2</span> identifiers<span></span></a></li>
+<li><a href="#kinds" id="toc-kinds"><span class="toc-section-number">9.3</span> Kinds<span></span></a>
+<ul>
+<li><a href="#identifiers-1" id="toc-identifiers-1"><span class="toc-section-number">9.3.1</span>
+Identifiers<span></span></a></li>
+<li><a href="#namespaces-1" id="toc-namespaces-1"><span class="toc-section-number">9.3.2</span> Namespaces<span></span></a></li>
+<li><a href="#types" id="toc-types"><span class="toc-section-number">9.3.3</span> Types<span></span></a></li>
+<li><a href="#ordering-class-types" id="toc-ordering-class-types"><span class="toc-section-number">9.3.4</span> Ordering Class
+Types<span></span></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#proposed-wording" id="toc-proposed-wording"><span class="toc-section-number">10</span> Proposed
+Wording<span></span></a></li>
+<li><a href="#acknowledgements" id="toc-acknowledgements"><span class="toc-section-number">11</span>
+Acknowledgements<span></span></a></li>
+<li><a href="#appendix-a-building-apply_canonicalized" id="toc-appendix-a-building-apply_canonicalized"><span class="toc-section-number">12</span> Appendix A: building
+<code class="sourceCode default">apply_canonicalized</code><span></span></a>
+<ul>
+<li><a href="#full-code-listing-as-tested-and-implemented" id="toc-full-code-listing-as-tested-and-implemented"><span class="toc-section-number">12.1</span> Full code listing as tested and
+implemented<span></span></a></li>
+</ul></li>
+<li><a href="#appendix-b-__pretty_function__-instability" id="toc-appendix-b-__pretty_function__-instability"><span class="toc-section-number">13</span> Appendix B:
+<code class="sourceCode default">__PRETTY_FUNCTION__</code>
+instability<span></span></a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">14</span> References<span></span></a></li>
+</ul>
+</div>
+<h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
+<p>As of C++23, <code class="sourceCode default">std::type_info</code>
+provides a stable but <em>unspecified</em> and
+non-<code class="sourceCode default">constexpr</code> order on
+types.</p>
+<p>This paper explores a standardized ordering of types in C++.</p>
+<p>This paper is split into two parts:</p>
+<ol type="1">
+<li>the design of the exposition-only function
+<code class="sourceCode default">TYPE_ORDER(x, y)</code>, which deals
+with how such an order should be defined,</li>
+<li>how to expose this capability to the programmer (syntax).</li>
+</ol>
+<h1 data-number="2" id="revision-history"><span class="header-section-number">2</span> Revision History<a href="#revision-history" class="self-link"></a></h1>
+<ol start="0" type="1">
+<li>New Paper</li>
+<li>Revision 1
+<ul>
+<li>Introduce options to prevent changing
+<code class="sourceCode default">std::type_info::before</code></li>
+<li>Anonymous namespaces can’t be empty</li>
+<li>Add FAQ section</li>
+<li>Add motivating examples</li>
+<li>Add proposed syntax</li>
+<li>Add appendix</li>
+</ul></li>
+<li>Revision 2
+<ul>
+<li>Presented at the EWGi in Tokyo.</li>
+<li>Propose to make the
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> definition
+<code class="sourceCode default">constexpr</code> and
+<em>implementation-defined</em>, as suggested by EWGi and BSI
+reviewers.</li>
+<li>added wording</li>
+<li>added more motivating examples</li>
+</ul></li>
+<li>Revision 3
+<ul>
+<li>incorporates wording feedback from Jens Maurer, to be presented in
+an EWG telecon</li>
+</ul></li>
+<li>Revision 4
+<ul>
+<li>incorporated feedback from the EWG discussion on May 17th</li>
+<li>Added example of
+<code class="sourceCode default">__PRETTY_FUNCTION__</code> differences
+from Barry Revzin (thanks!)</li>
+<li>Incorporated the fact that EWG decided that the syntax is
+reasonable, pending LEWG review.</li>
+<li>Did a further pass on properly defining
+<code class="sourceCode default">SORT_KEY(x, y)</code></li>
+</ul></li>
+</ol>
+<h1 data-number="3" id="motivation"><span class="header-section-number">3</span> Motivation<a href="#motivation" class="self-link"></a></h1>
+<p>There is currently no way in portable C++ to sort types at
+compile-time.</p>
+<p>Various libraries hack it together, mostly by utilizing
+<code class="sourceCode default">__PRETTY_FUNCTION__</code>, but all
+such methods are non-portable and error-prone (consider forward-declared
+enums - example in Annex). There are multiple stack-overflow questions
+on the topic.</p>
+<p><a href="https://github.com/libfn/functional">One such
+implementation</a> is part of the monadic functional library by Bronek
+Kozicki et al.</p>
+<p>Fundamentally, we need a way to canonicalize sets and multisets of
+types. This is necessary when building any kind of compositional library
+in C++, from <code class="sourceCode default">std::execution</code>
+<span class="citation" data-cites="P2300R7">[<a href="#ref-P2300R7" role="doc-biblioref">P2300R7</a>]</span>, mixin libraries, libraries of
+monadic components and operators, policy-based libraries, etc. The
+inability to sort and unique types leads to the instantiation of an
+combinatorial number of templates instead of just one per typeset, which
+leads to code-bloat and untenable compile-times. The problem is
+fundamentally that without typeset canonicalization, we generate
+different template specializations but equivalent behavior, and there is
+no way to avoid this.</p>
+<p>The goal here is to provide a <em>flexible</em> language mechanism to
+let both <code class="sourceCode default">Foo&lt;A, B, C&gt;</code> and
+<code class="sourceCode default">Foo&lt;C, B, A&gt;</code> produce the
+same underlying
+<code class="sourceCode default">Foo_impl&lt;A, B, C&gt;</code>.</p>
+<p>The reason we start with
+<code class="sourceCode default">TYPE_ORDER()</code> and not “just give
+me typesets” is that we need flexibility; consider</p>
+<ul>
+<li>a given library might want to deduplicate on a part and keep either
+last or first, or even make it ill-formed: <code class="sourceCode default">Foo&lt;pair&lt;A, X&gt;, pair&lt;B, Y&gt;, pair&lt;A, Z&gt;&gt;</code>
+might want to be the same as <code class="sourceCode default">Foo_impl&lt;pair&lt;A, X&gt;, pair&lt;B, Y&gt;&gt;</code>
+or <code class="sourceCode default">Foo_impl&lt;pair&lt;A, Z&gt;, pair&lt;B, Y&gt;&gt;</code></li>
+<li>a given library might actually just want canonicalized multisets:
+<code class="sourceCode default">Foo&lt;A, B, A, A, C&gt;</code> should
+perhaps be
+<code class="sourceCode default">Foo&lt;A, A, A, B, C&gt;</code></li>
+<li>or treat the first one as special: <code class="sourceCode default">Matrix&lt;float, policy1, policy2, policy3&gt;</code>
+should only deduplicate policies.</li>
+</ul>
+<p>We must provide <code class="sourceCode default">TYPE_ORDER</code> in
+order to <code class="sourceCode default">sort</code> and
+<code class="sourceCode default">unique</code>; they are required
+building blocks for any <code class="sourceCode default">set</code>
+primitive. Put another way, even if we standardized a
+<code class="sourceCode default">set</code>, we’d need to somehow
+canonicalize the order (due to mangling and debug info), leading us back
+here.</p>
+<p>Without such canonicalization, it is infeasible to enumerate the set
+of function templates to instantiate in a separate compilation unit. For
+the same reason, it’s utterly impossible to type-erase them in a
+fixed-size virtual function table.</p>
+<h2 data-number="3.1" id="motivating-examples"><span class="header-section-number">3.1</span> Motivating Examples<a href="#motivating-examples" class="self-link"></a></h2>
+<p>This section introduces the kind of code we would like to write,
+regardless of how this feature ends up being spelled. To not prejudice
+the reader in this section, please assume the existence of an
+exposition-only <code class="sourceCode default">consteval</code> macro
+<code class="sourceCode default">TYPE_ORDER(x, y) -&gt; std::strong_ordering</code>
+whose arguments can be any cv-ref qualified types.</p>
+<p><strong>Note:</strong> while
+<code class="sourceCode default">TYPE_ORDER(x, y)</code> is defined on
+types, we can define a set of class templates that take an arbitrary
+template argument, and
+<code class="sourceCode default">TYPE_ORDER</code> those; this induces
+an order on all entities that can be template arguments.</p>
+<p>Crucially, also consider the interactions with <span class="citation" data-cites="P1985R3">[<a href="#ref-P1985R3" role="doc-biblioref">P1985R3</a>]</span> and <span class="citation" data-cites="P2841R1">[<a href="#ref-P2841R1" role="doc-biblioref">P2841R1</a>]</span>, which introduce
+<code class="sourceCode default">concept</code> and
+<code class="sourceCode default">variable-template</code> arguments.</p>
+<h3 data-number="3.1.1" id="archetypal-example-canonicalized-typelist"><span class="header-section-number">3.1.1</span> Archetypal example:
+canonicalized typelist<a href="#archetypal-example-canonicalized-typelist" class="self-link"></a></h3>
+<p>(Kept short because further examples give concrete needs).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{}</span>;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">{}</span>;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// we want some way to enable</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>std<span class="op">::</span>is_same_v<span class="op">&lt;</span>typeset<span class="op">&lt;</span>A, B<span class="op">&gt;</span>, typeset<span class="op">&lt;</span>B, A, A<span class="op">&gt;&gt;)</span>;</span></code></pre></div>
+<p>Furthermore, we need the order to be the same in different
+compilation units.</p>
+<h3 data-number="3.1.2" id="canonicalizing-policy-based-libraries"><span class="header-section-number">3.1.2</span> Canonicalizing policy-based
+libraries<a href="#canonicalizing-policy-based-libraries" class="self-link"></a></h3>
+<p>Consider the needs of a library for type-erasure; we’d like the user
+to specify the capabilities to erase. Fundamentally, these capabilities
+are a set.</p>
+<p>Observe:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> T1 <span class="op">=</span> lib<span class="op">::</span>dyn<span class="op">&lt;</span>ostreamable, json_serializable, iterable<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span>, scalar_multiplicable<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;&gt;</span>;</span></code></pre></div>
+<p>Different users of the library will likely provide these capabilities
+in different orders; this becomes especially problematic when writing
+functions:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> T2 <span class="op">=</span> lib<span class="op">::</span>dyn<span class="op">&lt;</span>json_serializable, ostreamable, iterable<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span>, scalar_multiplicable<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;&gt;</span>;</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                    <span class="op">~~~~~~</span> flipped <span class="op">~~~~~~~~~~~~~~~</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>T2 <span class="kw">const</span><span class="op">&amp;)</span>;</span></code></pre></div>
+<p>We can solve this by having type aliases, but if these sets are
+<em>computed</em>, we are left without recourse:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span>;</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> pipeline1 <span class="op">=</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>   log<span class="op">(</span>std<span class="op">::</span>cerr<span class="op">)</span> <span class="op">|</span> sum_into<span class="op">(&amp;</span>sum<span class="op">)</span> <span class="op">|</span> imul<span class="op">(</span>sum<span class="op">)</span> <span class="op">|</span> json_dump<span class="op">(</span>std<span class="op">::</span>cout<span class="op">)</span>;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">// dyn&lt;ostreamable, iterable&lt;int&gt;, scalar_multiplicable&lt;int&gt;, json_serializable&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> pipeline2 <span class="op">=</span> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>   sum_into<span class="op">(&amp;</span>sum<span class="op">)</span> <span class="op">|</span> imul<span class="op">(</span>sum<span class="op">)</span> <span class="op">|</span> json_dump<span class="op">(</span>std<span class="op">::</span>cout<span class="op">)</span> <span class="op">|</span> log<span class="op">(</span>std<span class="op">::</span>cerr<span class="op">)</span>;</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">// dyn&lt;iterable&lt;int&gt;, scalar_multiplicable&lt;int&gt;, json_serializable, ostreamable&gt;</span></span></code></pre></div>
+<p>The above pipelines need the same type-erased interface for its
+input, and neither is either <code class="sourceCode default">T1</code>
+or <code class="sourceCode default">T2</code>.</p>
+<h3 data-number="3.1.3" id="canonicalized-variant"><span class="header-section-number">3.1.3</span> Canonicalized variant<a href="#canonicalized-variant" class="self-link"></a></h3>
+<p>The most obvious example is a canonicalized
+<code class="sourceCode default">std::variant</code>, that is, something
+like</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> variant_for <span class="op">=</span> apply_canonicalized<span class="op">&lt;</span>std<span class="op">::</span>variant, Ts<span class="op">...&gt;</span>;</span></code></pre></div>
+<p>Building <code class="sourceCode default">apply_canonicalized</code>
+is not terribly difficult, as long as we have
+<code class="sourceCode default">TYPE_ORDER</code>. Please see the
+appendices on how to do it.</p>
+<p>It <em>would</em> be nice if
+<code class="sourceCode default">apply_canonicalized</code> was a
+language built-in, but to do that, we need to first define
+<code class="sourceCode default">TYPE_ORDER(x, y)</code>. After we
+define <code class="sourceCode default">TYPE_ORDER</code>, putting
+<code class="sourceCode default">apply_canonicalized</code> into
+<code class="sourceCode default">type_traits</code> is a far simpler
+proposition.</p>
+<p><strong>Note:</strong>
+<code class="sourceCode default">apply_canonicalized</code> is roughly
+<code class="sourceCode default">mp11::mp_sort</code> +
+<code class="sourceCode default">mp11::unique</code> with the order
+derived from <code class="sourceCode default">TYPE_ORDER</code>.</p>
+<p>Effectively any time a variant is type-indexed instead of
+integer-indexed, we would prefer the compiler generate just one type per
+set, instead of type-per-list.</p>
+<p>Examples follow, but they are by no means exhaustive.</p>
+<h4 data-number="3.1.3.1" id="multiple-error-kinds-and-stdexpected"><span class="header-section-number">3.1.3.1</span> Multiple error kinds and
+<code class="sourceCode default">std::expected</code><a href="#multiple-error-kinds-and-stdexpected" class="self-link"></a></h4>
+<p>Consider a <code class="sourceCode default">std::expected</code> for
+an algorithm that can fail in several ways:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> read_packet<span class="op">(</span>socket<span class="op">&amp;</span> sock<span class="op">)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">-&gt;</span> expected<span class="op">&lt;</span>message, variant<span class="op">&lt;</span>io_error, decode_error<span class="op">&gt;&gt;</span>;</span></code></pre></div>
+<p>Such an algorithm doesn’t care about whether the error type is <code class="sourceCode default">variant&lt;io_error, decode_error&gt;</code>
+or <code class="sourceCode default">variant&lt;decode_error, io_error&gt;</code>.
+This is not as much of a problem in cases where the programmer writes
+the types by hand, but consider the generic situation where several
+errors must be aggregated generically:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Decoder<span class="op">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> read_packet<span class="op">(</span>socket<span class="op">&amp;</span> sock<span class="op">)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">-&gt;</span> expected<span class="op">&lt;</span>Decoder<span class="op">::</span>message_type,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                variant<span class="op">&lt;</span><span class="co">/*uniqued and sorted io_error + Decoder::error_types*/</span><span class="op">&gt;&gt;</span>;</span></code></pre></div>
+<p>If we had member packs and pack aliases, and a nice built-in
+<code class="sourceCode default">set</code>, we could o the above as</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">...</span><span class="kw">using</span> set <span class="op">=</span> <span class="fu">__builtin_uniqued_sorted</span><span class="op">&lt;</span>Ts<span class="op">...&gt;</span>;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>variant<span class="op">&lt;...</span>set<span class="op">&lt;</span>io_error, Decoder<span class="op">::...</span>error_types<span class="op">...&gt;...&gt;</span>;</span></code></pre></div>
+<h4 data-number="3.1.3.2" id="suspension-point-storage-for-asynchronous-code"><span class="header-section-number">3.1.3.2</span> Suspension-point storage
+for asynchronous code<a href="#suspension-point-storage-for-asynchronous-code" class="self-link"></a></h4>
+<p><code class="sourceCode default">std::execution</code> (and every
+other async library) needs a variant-type to store the current result at
+a suspension point. In general, since it models a “suspended” function
+call, it’s analogous to some kind of</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variant<span class="op">&lt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    closure_tuple<span class="op">&lt;</span>set_value, Arg1_1, Arg1_2, Arg1_3<span class="op">&gt;</span>, <span class="co">// first possible entry point</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    closure_tuple<span class="op">&lt;</span>set_value, Arg2_1<span class="op">&gt;</span>,                 <span class="co">// second possible entry point</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    closure_tuple<span class="op">&lt;</span>set_error, <span class="op">...&gt;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span></span></code></pre></div>
+<p>The venerable <code class="sourceCode default">rxcpp</code> library
+by Kirk Shoop calls this type a <em>notification</em>.</p>
+<p>Consider the
+<code class="sourceCode default">transfer(scheduler)</code> algorithm;
+it receives all <code class="sourceCode default">set_value(PACK)</code>,
+<code class="sourceCode default">set_error(PACK)</code> and possibly
+<code class="sourceCode default">set_stopped()</code> parameter lists,
+<em>stores them in a</em> <code class="sourceCode default">variant&lt;tuple&lt;CHANNEL, PACK&gt;...&gt;</code>,
+and resumes with the values on a different scheduler once the compute
+resource becomes available.</p>
+<p>The code using it looks like this:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>some_computation <span class="op">|</span> transfer<span class="op">(</span>scheduler<span class="op">)</span> <span class="op">|</span> then<span class="op">([](</span><span class="kw">auto</span><span class="op">&amp;&amp;...</span>args<span class="op">){</span><span class="co">/*...*/</span><span class="op">})...</span></span></code></pre></div>
+<p>All the possible closure tuples are fundamentally unsorted, and
+generating the assembly, debug information, and everything else for this
+type more than once is a waste of compile-time and executable space (as
+well as instruction cache).</p>
+<p>Furthermore, stamping out this type multiple times also duplicates
+the calling code, and given the different indices, COMDAT folding cannot
+deduplicate those code-paths.</p>
+<h4 data-number="3.1.3.3" id="compositional-state-machine-models"><span class="header-section-number">3.1.3.3</span> Compositional State machine
+models<a href="#compositional-state-machine-models" class="self-link"></a></h4>
+<p>The states of most state-machines are fundamentally unordered, as are
+the message types they receive. If a state machine is generated (such as
+in a compile-time regex library), canonicalizing identically-behaving
+components would lead to smaller state-machines and faster compile- and
+execution times.</p>
+<h3 data-number="3.1.4" id="canonicalized-tuple"><span class="header-section-number">3.1.4</span> Canonicalized tuple<a href="#canonicalized-tuple" class="self-link"></a></h3>
+<p>Similarly to a canonicalized
+<code class="sourceCode default">variant</code>, a
+<code class="sourceCode default">canonicalized_tuple</code> could be
+implemented as</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span>Ts<span class="op">&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonical_tuple <span class="op">=</span> apply_canonicalized<span class="op">&lt;</span>tuple, Ts<span class="op">...&gt;</span>;</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonical_tuple <span class="op">=</span> tuple<span class="op">&lt;...</span>set<span class="op">&lt;</span>Ts<span class="op">...&gt;...&gt;</span>;</span></code></pre></div>
+<p>This is far less useful on its own than the
+<code class="sourceCode default">variant</code>, since initializing that
+type will be quite the chore. Instead, canonicalized tuples appear as a
+result of the <code class="sourceCode default">environment</code>
+monads.</p>
+<p><code class="sourceCode default">std::execution</code> mixes in an
+environment, which consists at least of a
+<code class="sourceCode default">stoppable_token</code>, a
+<code class="sourceCode default">scheduler</code>, and possibly other
+things like a <code class="sourceCode default">domain</code>, and, at
+least in the authors’ implementation, arbitrary other things. An
+<code class="sourceCode default">allocator</code> is also optionally
+part of the environment.</p>
+<p>The <code class="sourceCode default">environment&lt;pair&lt;Tags, Ts&gt;...&gt;</code>
+is a product type that is a map from
+<code class="sourceCode default">Tag</code> to a value of type
+<code class="sourceCode default">T</code>, say
+<code class="sourceCode default">std::stop_token</code> to
+<code class="sourceCode default">never_stop_token{}</code> and
+<code class="sourceCode default">scheduler</code> to
+<code class="sourceCode default">thread_pool_scheduler</code>.</p>
+<p>One can push and pop things off the environment in different parts of
+the pipeline; if the pushes come in the wrong order, the environment is
+difficult to keep canonicalized.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> ss <span class="op">=</span> std<span class="op">::</span>stop_source<span class="op">()</span>;</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> tp <span class="op">=</span> std<span class="op">::</span>static_thread_pool<span class="op">(</span><span class="dv">5</span><span class="op">)</span>;</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> env <span class="op">=</span> empty_env<span class="op">{}</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> push_env<span class="op">&lt;</span>stop_token<span class="op">&gt;(</span>ss<span class="op">.</span>get_token<span class="op">())</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> push_env<span class="op">&lt;</span>scheduler_t<span class="op">&gt;(</span>tp<span class="op">.</span>get_scheduler<span class="op">())</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> push_env<span class="op">&lt;</span>mylib<span class="op">::</span>numa_domain_t<span class="op">&gt;(</span><span class="dv">2</span><span class="op">)</span>;</span></code></pre></div>
+<p>If you imagine those three calls to happen in different algorithm
+transformers, it’s quite likely they’ll be in a different order,
+manifesting a different type, which doesn’t make much sense - the type
+behaves identically, this just leads to code bloat.</p>
+<h3 data-number="3.1.5" id="api-stability"><span class="header-section-number">3.1.5</span> API stability<a href="#api-stability" class="self-link"></a></h3>
+<p>The authors have observed a necessity to sometimes split parts of
+such pipeline compositions into different compilation units due to
+excessive compile times and repetitive compilation.</p>
+<p>This has proven difficult due to the brittle nature of type ordering
+of the names of explicit template specializations involved. By far, the
+main culprit has been the lack of a sensible canonicalization of names,
+as the order changes far more frequently than the set of types.</p>
+<p>Consider:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>do_something()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    | error_if_odd()          // there is no semantic change</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    | error_if_we_too_long()  // if we flip these lines</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    | ...</span></code></pre></div>
+<p>Flipping the lines will flip the two exit error types in the error
+list, however.</p>
+<p>Having a defined, stable order of types proved invaluable (even if we
+did hack the type order manually).</p>
+<h1 data-number="4" id="design-discussion"><span class="header-section-number">4</span> Design discussion<a href="#design-discussion" class="self-link"></a></h1>
+<p>The first two revisions of this proposal tried to construct a full
+type ordering from first principles; EWGi then requested we change to an
+implementation-defined order (use the mangler), but EWG subsequently
+reversed that decision.</p>
+<h2 data-number="4.1" id="pros-of-implementation-defined"><span class="header-section-number">4.1</span> Pros of
+implementation-defined<a href="#pros-of-implementation-defined" class="self-link"></a></h2>
+<p>The overwhelming response of people working on implementations, as
+well as people sitting on the Itanium ABI standards committee, was that
+this is a fool’s errand, and we need only look at the bugreports for the
+Itanium ABI to see why.</p>
+<h3 data-number="4.1.1" id="abi-specifications-already-have-to-do-this-work"><span class="header-section-number">4.1.1</span> ABI specifications already
+have to do this work<a href="#abi-specifications-already-have-to-do-this-work" class="self-link"></a></h3>
+<p>As a taster, consider the following conundrum:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> what_type <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>        <span class="op">[](</span><span class="kw">this</span> <span class="kw">auto</span><span class="op">&amp;&amp;</span> self,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>           <span class="kw">decltype</span><span class="op">([](</span><span class="kw">decltype</span><span class="op">(</span>self<span class="op">)&amp;){})</span> x <span class="op">=</span> <span class="op">{}){</span> <span class="cf">return</span> x; <span class="op">}())</span>;</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ^^ outer ^^ inner</span></span></code></pre></div>
+<p>The inner lambda’s “name” is clearly dependent on the outer’s, but it
+also goes the other way! The ABI standards already have to deal with
+such mangling conundrums, and duplicating their work in the C++ standard
+itself seems highly counterproductive, especially since the ABI
+standards already accomplish all the stability guarantees we would
+want.</p>
+<h3 data-number="4.1.2" id="the-c-standard-doesnt-own-cross-compilation-unit-semantics"><span class="header-section-number">4.1.2</span> The C++ standard doesn’t own
+cross-compilation-unit semantics<a href="#the-c-standard-doesnt-own-cross-compilation-unit-semantics" class="self-link"></a></h3>
+<p>Another problem is that within the C++ standard, we cannot legislate
+what happens with orderings between compilation units. Granted, we do
+not need this for <code class="sourceCode default">constexpr</code>, but
+we do need it to be stable and make sense, so a certain amount of common
+sense will be expected from implementations <em>anyway</em>.</p>
+<p>The recommendation was overwhelmingly to just let the order be
+implementation-defined, and let the implementations do the sensible
+thing.</p>
+<h3 data-number="4.1.3" id="any-new-proposal-to-c-would-have-to-consider-the-ordering"><span class="header-section-number">4.1.3</span> Any new proposal to C++ would
+have to consider the ordering<a href="#any-new-proposal-to-c-would-have-to-consider-the-ordering" class="self-link"></a></h3>
+<p>“punting it off to implementations” saves the C++ standardization
+process from having to figure this out for every new proposal that
+touches types; implementations, however, already have representation on
+the committee, and will veto any truly unimplementable things in this
+space.</p>
+<h3 data-number="4.1.4" id="type_orderx-y-already-has-public-facing-api-implications"><span class="header-section-number">4.1.4</span>
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> already has
+public-facing API implications<a href="#type_orderx-y-already-has-public-facing-api-implications" class="self-link"></a></h3>
+<p>The “normalized” versions of types will inevitably show up in
+function signatures; if different compilers on the same platform
+produced different orderings, compilation units from different compilers
+would refuse to link, despite both “signatures” beings spelled
+identically.</p>
+<p>Letting the compiler vendors synchronize based on the mangling scheme
+or something equivalently useful is the same forum as the current ABI
+discussion forums; it seems the appropriate venue to standardize the
+ordering anyay, without making WG21 duplicate the work.</p>
+<h2 data-number="4.2" id="pros-of-completely-defined-order-chosen-design"><span class="header-section-number">4.2</span> Pros of completely defined
+order (chosen design)<a href="#pros-of-completely-defined-order-chosen-design" class="self-link"></a></h2>
+<h3 data-number="4.2.1" id="static-analyzers-do-not-have-a-single-backend"><span class="header-section-number">4.2.1</span> Static analyzers do not have
+a single backend<a href="#static-analyzers-do-not-have-a-single-backend" class="self-link"></a></h3>
+<p>This proved decisive. Since static analyzers and compilers that
+produce intermediate representations before choosing a backend are part
+of the ecosystem, it is important to be consistent and not rely on a
+particular mangler.</p>
+<h3 data-number="4.2.2" id="consteval-should-be-as-portable-as-possible"><span class="header-section-number">4.2.2</span>
+<code class="sourceCode default">consteval</code> should be as portable
+as possible<a href="#consteval-should-be-as-portable-as-possible" class="self-link"></a></h3>
+<p>The abstract machine used at constant evaluation time has far fewer
+parameters than the runtime one. We should keep them to a minimum, and
+type ordering is not a necessary parameter. We should keep
+implementations consistent.</p>
+<h2 data-number="4.3" id="desirable-properties-of-type_orderx-y"><span class="header-section-number">4.3</span> Desirable properties of
+<code class="sourceCode default">TYPE_ORDER(x, y)</code><a href="#desirable-properties-of-type_orderx-y" class="self-link"></a></h2>
+<h3 data-number="4.3.1" id="stability"><span class="header-section-number">4.3.1</span> Stability<a href="#stability" class="self-link"></a></h3>
+<p>The order should be the same across compilation units. This is key
+for generating ABI-compatible vtables, for instance.</p>
+<p>It also should be stable through time. An order based on an
+ABI-mangling scheme satisfies this notion, at least.</p>
+<h3 data-number="4.3.2" id="free-standing"><span class="header-section-number">4.3.2</span> Free-standing<a href="#free-standing" class="self-link"></a></h3>
+<p>The order should be available on freestanding implementations. One
+crucial use-case is replacing the exception mechanism on those platforms
+with return values of
+<code class="sourceCode default">std::expected</code> or similar, and
+compromising that is undesirable.</p>
+<h3 data-number="4.3.3" id="consistency-with-type_infobefore"><span class="header-section-number">4.3.3</span> Consistency with
+<code class="sourceCode default">type_info::before()</code><a href="#consistency-with-type_infobefore" class="self-link"></a></h3>
+<p>Ideally, whenever <code class="sourceCode default">typeid(x).before(typeid(y)) == true</code>,
+then <code class="sourceCode default">TYPE_ORDER(x, y) == std::strong_ordering::less</code>.
+The converse obviously cannot be true, since
+<code class="sourceCode default">TYPE_ORDER(x, y)</code> is finer than
+the order induced by
+<code class="sourceCode default">type_info::before()</code>.</p>
+<p>However, the standard currently says</p>
+<blockquote>
+<p>The names, encoding rule, and collating sequence for types are all
+unspecified and may differ between programs.</p>
+</blockquote>
+<p>Since this paper requires that the order not differ between programs,
+exposing this as a normative requirement is impossible without
+tightening this wording, which is outside the scope of this paper.</p>
+<p>At least at present, some implementations decide this order at
+program startup time, so this is not in general implementable.</p>
+<h3 data-number="4.3.4" id="self-consistency"><span class="header-section-number">4.3.4</span> Self-consistency<a href="#self-consistency" class="self-link"></a></h3>
+<p>The ordering should be self-consistent, that is, for all possible
+template arguments <code class="sourceCode default">T</code>,
+<code class="sourceCode default">U</code>, and any unary template
+<code class="sourceCode default">some_template</code>:</p>
+<p><code class="sourceCode default">TYPE_ORDER(T, U) == TYPE_ORDER(some_template&lt;T&gt;, some_template&lt;U&gt;)</code>.</p>
+<h3 data-number="4.3.5" id="reflection-compatibility"><span class="header-section-number">4.3.5</span> Reflection compatibility<a href="#reflection-compatibility" class="self-link"></a></h3>
+<p>Any <code class="sourceCode default">operator&lt;=&gt;(std::meta::info, std::meta::info)</code>
+should be consistent with this one.</p>
+<p>While <code class="sourceCode default">std::meta::info</code> <span class="citation" data-cites="P2320R0">[<a href="#ref-P2320R0" role="doc-biblioref">P2320R0</a>]</span> objects can reflect more
+entities than just types and values (mainly: expressions), any ordering
+defined on them should be finer than this one, and specifically
+consistent with it. We should do something that reflection can
+subsume.</p>
+<p>However, it doesn’t seem like that proposal will define an ordering
+on <code class="sourceCode default">info</code> objects, and we need
+this solved sooner than that.</p>
+<h1 data-number="5" id="proposal"><span class="header-section-number">5</span> Proposal<a href="#proposal" class="self-link"></a></h1>
+<h2 data-number="5.1" id="semantics"><span class="header-section-number">5.1</span> Semantics<a href="#semantics" class="self-link"></a></h2>
+<p>Regardless of the syntax chosen, the semantics would be the
+following.</p>
+<p>Let <code class="sourceCode default">X</code> and
+<code class="sourceCode default">Y</code> be (possibly cv-ref) qualified
+types.</p>
+<p><code class="sourceCode default">TYPE_ORDER(X, Y)</code> is an
+constant expression of type
+<code class="sourceCode default">std::strong_ordering</code>.</p>
+<ul>
+<li><code class="sourceCode default">std::same_as&lt;X, Y&gt; == true</code>
+if and only if <code class="sourceCode default">TYPE_ORDER(X, Y) == std::strong_ordering::equal</code>.</li>
+<li>Otherwise, <code class="sourceCode default">TYPE_ORDER(X, Y)</code>
+is either
+<code class="sourceCode default">std::strong_ordering::less</code> or
+<code class="sourceCode default">std::strong_ordering::greater</code>.
+Which of those is implementation-defined, subject to the following
+semantic constraints.</li>
+</ul>
+<p>Implementations must define
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> such that it is
+an ordering, that is, it is transitive and antisymmetric; that is</p>
+<ul>
+<li>if <code class="sourceCode default">TYPE_ORDER(X, Y) == std::strong_ordering::less</code>,
+then
+<code class="sourceCode default">TYPE_ORDER(Y, X) ==</code>std::strong_ordering::greater`
+and vice versa</li>
+<li>if <code class="sourceCode default">TYPE_ORDER(X, Y) == std::strong_ordering::less</code>
+and <code class="sourceCode default">TYPE_ORDER(Y, Z) ==   std::strong_ordering::less</code>,
+then <code class="sourceCode default">TYPE_ORDER(X, Z)</code> is also
+<code class="sourceCode default">std::strong_ordering::less</code>.</li>
+</ul>
+<p>It is implementation-defined whether the order
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> is finer than
+the one implied by
+<code class="sourceCode default">std::type_info::before</code>. That
+is,</p>
+<ul>
+<li>if
+<code class="sourceCode default">typeid(X).before(typeid(Y))</code>,
+then <code class="sourceCode default">TYPE_ORDER(X, Y) == std::strong_ordering::less</code>.</li>
+</ul>
+<p>Note: the converse is not possible -
+<code class="sourceCode default">TYPE_ORDER(X, Y)</code> does not strip
+<em>cv-ref</em> qualifiers.</p>
+<p>Please also note that <code class="sourceCode default">X</code> and
+<code class="sourceCode default">Y</code> are types (not expressions),
+and therefore <code class="sourceCode default">typeid</code> does not
+have dynamic typing semantics in this case.</p>
+<p>Note: Implementations are encouraged to do this if possible, and
+making it “implementation-defined” places a requirement on
+implementations to document whether they did so.</p>
+<h2 data-number="5.2" id="syntax"><span class="header-section-number">5.2</span> Syntax<a href="#syntax" class="self-link"></a></h2>
+<p>Any syntax will do for the use-case, but some better than others.
+This section explores the trade-offs in syntax choice.</p>
+<p>The authors recommend the first option.</p>
+<h3 data-number="5.2.1" id="option-1-chosen-by-ewg-a-variable-template-stdtype_order_vt-u"><span class="header-section-number">5.2.1</span> Option 1 (chosen by EWG): a
+variable template
+<code class="sourceCode default">std::type_order_v&lt;T, U&gt;</code><a href="#option-1-chosen-by-ewg-a-variable-template-stdtype_order_vt-u" class="self-link"></a></h3>
+<p>Specifally:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> std<span class="op">::</span>strong_ordering type_order_v <span class="op">=</span> TYPE_ORDER<span class="op">(</span>T, U<span class="op">)</span>; <span class="co">/* see below */</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> type_order <span class="op">:</span> integral_constant<span class="op">&lt;</span>strong_ordering, type_order_v<span class="op">&lt;</span>T, U<span class="op">&gt;&gt;</span> <span class="op">{}</span>;</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">// as a separate library proposal, once member packs make it</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="op">...</span>typemultiset <span class="op">=</span> <span class="co">/* pack of Ts, sorted by type_order_v */</span>;</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="op">...</span>typeset <span class="op">=</span> <span class="co">/* uniqued ...typemultiset&lt;Ts...&gt;... */</span>;</span></code></pre></div>
+<p>This seems like a pretty good choice. It does not need a new keyword,
+only depends on <code class="sourceCode default">&lt;compare&gt;</code>,
+and the name seems relatively discoverable.</p>
+<p>We could, in fact, put it into
+<code class="sourceCode default">&lt;compare&gt;</code> if we didn’t
+want <code class="sourceCode default">&lt;type_traits&gt;</code> to
+depend on it.</p>
+<p>It’s also freestanding, since it doesn’t depend on
+<code class="sourceCode default">&lt;typeinfo&gt;</code>.</p>
+<p>We should also allow, as a special provision, the arguments to the
+above metafunctions to be incomplete.</p>
+<h3 data-number="5.2.2" id="option-2-variable-template-stdentity_orderingx-y"><span class="header-section-number">5.2.2</span> Option 2: variable template
+<code class="sourceCode default">std::entity_ordering&lt;X, Y&gt;</code><a href="#option-2-variable-template-stdentity_orderingx-y" class="self-link"></a></h3>
+<p>Specifically:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> strong_ordering entity_order_v <span class="op">=</span> TYPE_ORDER<span class="op">(</span>X, Y<span class="op">)</span>; <span class="co">/* see below */</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> entity_order <span class="op">:</span> integral_constant<span class="op">&lt;</span>strong_ordering, entity_order_v<span class="op">&lt;</span>X, Y<span class="op">&gt;&gt;</span> <span class="op">{}</span>;</span></code></pre></div>
+<p>This is a better option than Option 1 if we get universal template
+parameters, as we really want to also order class templates, not just
+types.</p>
+<p>However, without universal template parameters, we really don’t have
+much of a choice but to reach for Option 1.</p>
+<p>The name <code class="sourceCode default">entity_order</code> is also
+slightly less obvious than
+<code class="sourceCode default">type_order</code>, but metaprogrammers
+shouldn’t have trouble finding either.</p>
+<h3 data-number="5.2.3" id="option-3-reflection"><span class="header-section-number">5.2.3</span> Option 3: reflection<a href="#option-3-reflection" class="self-link"></a></h3>
+<p>Specifically:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> std<span class="op">::</span>partial_ordering partial_order<span class="op">(</span>std<span class="op">::</span>meta<span class="op">::</span>info x, std<span class="op">::</span>meta<span class="op">::</span>info y<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> __comparable<span class="op">(</span>x, y<span class="op">)</span> <span class="op">?</span> TYPE_ORDER<span class="op">(</span>x, y<span class="op">)</span> <span class="op">:</span> std<span class="op">::</span>partial_order<span class="op">::</span>unordered;</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>We could standardize a type order as a function on
+<code class="sourceCode default">std::meta::info</code> objects in
+<code class="sourceCode default">std::meta</code>. However, once we’re
+in <code class="sourceCode default">std::meta::info</code> space, it’s
+more difficult to know which reflections are comparable and which
+aren’t, so such a function would need to return a
+<code class="sourceCode default">std::partial_order</code>, which seems
+decidedly less desirable.</p>
+<p>It also means we’d need to pass the correct kind of reflection into
+the ordering function, which is a bit less intuitive than just
+<code class="sourceCode default">decltype</code> or just the template
+parameter that we already have.</p>
+<h3 data-number="5.2.4" id="option-4-bad-heterogeneous-constexpr-stdtype_identityoperator"><span class="header-section-number">5.2.4</span> Option 4 (bad): heterogeneous
+<code class="sourceCode default">constexpr std::type_identity::operator&lt;=&gt;</code><a href="#option-4-bad-heterogeneous-constexpr-stdtype_identityoperator" class="self-link"></a></h3>
+<p>Specifically:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>strong_ordering <span class="kw">operator</span><span class="op">&lt;=&gt;(</span>std<span class="op">::</span>type_identity<span class="op">&lt;</span>T<span class="op">&gt;</span>, std<span class="op">::</span>type_identity<span class="op">&lt;</span>U<span class="op">&gt;)</span>;</span></code></pre></div>
+<p><strong>Pros:</strong></p>
+<ul>
+<li>No new names.</li>
+</ul>
+<p><strong>Cons:</strong></p>
+<ul>
+<li>Less discoverable than a new type-trait</li>
+<li>Requires template instantiations of
+<code class="sourceCode default">type_identity&lt;T&gt;</code>,
+<code class="sourceCode default">type_identity&lt;U&gt;</code>, as well
+as <code class="sourceCode default">operator&lt;=&gt;</code> overload
+resolution and substitution, which is quite expensive compared to a
+single <code class="sourceCode default">type_order_v&lt;T, U&gt;</code>
+direct substitution and lookup.</li>
+<li>An extra <code class="sourceCode default">operator&lt;=&gt;</code>
+overload in the <code class="sourceCode default">std</code> namespace is
+a drag on overload resolution</li>
+<li>adds <code class="sourceCode default">&lt;compare&gt;</code> to
+<code class="sourceCode default">&lt;type_traits&gt;</code>, since
+that’s where <code class="sourceCode default">type_identity</code>
+is</li>
+<li>too cute?</li>
+<li>doesn’t work for nontypes</li>
+</ul>
+<h3 data-number="5.2.5" id="option-5-bad-constexpr-std__liftargoperator"><span class="header-section-number">5.2.5</span> Option 5 (bad): <code class="sourceCode default">constexpr std::__lift&lt;arg&gt;::operator&lt;=&gt;</code><a href="#option-5-bad-constexpr-std__liftargoperator" class="self-link"></a></h3>
+<p>This option means we add <code class="sourceCode default">template &lt;universal template&gt; struct __lift {};</code>
+into <code class="sourceCode default">&lt;type_traits&gt;</code> and
+define <code class="sourceCode default">operator&lt;=&gt;</code> for
+it.</p>
+<p><strong>Pros:</strong></p>
+<ul>
+<li>… we’ll need a lift sooner or later?</li>
+</ul>
+<p><strong>Cons:</strong></p>
+<ul>
+<li>all the cons of
+<code class="sourceCode default">type_identity</code></li>
+<li>even more nonobvious</li>
+<li>still needs a new name</li>
+<li>needs a tutorial to find</li>
+</ul>
+<h3 data-number="5.2.6" id="non-option-constexpr-bool-stdtype_infobefore"><span class="header-section-number">5.2.6</span> Non-Option: <code class="sourceCode default">constexpr bool std::type_info::before()</code><a href="#non-option-constexpr-bool-stdtype_infobefore" class="self-link"></a></h3>
+<p>(Included because it’s a common question.)</p>
+<p>It would be nice, but alas, operates on <em>cv-unqualified</em>
+versions of the referenced type, so it’s not sufficient.</p>
+<p><code class="sourceCode default">constexpr std::strong_order(std::type_info, std::type_info)</code>
+has similar issues.</p>
+<h1 data-number="6" id="faq"><span class="header-section-number">6</span> FAQ<a href="#faq" class="self-link"></a></h1>
+<h2 data-number="6.1" id="why-should-this-be-standardized"><span class="header-section-number">6.1</span> Why should this be
+standardized?<a href="#why-should-this-be-standardized" class="self-link"></a></h2>
+<p>Because we have no way to reliably order types across compilation
+units at compile-time.</p>
+<h2 data-number="6.2" id="why-not-wait-for-reflection"><span class="header-section-number">6.2</span> Why not wait for reflection?<a href="#why-not-wait-for-reflection" class="self-link"></a></h2>
+<p>It’s a good question. However, reflection will do <em>nothing</em>
+for this problem by itself; the user will still have to implement
+ordering using <code class="sourceCode default">consteval</code>
+functions, which have no hope of being as fast as a compiler-provided
+built-in.</p>
+<p>User-programmed functions also won’t adapt to language evolution;
+this feature will.</p>
+<p>Finally, sorting is arbitrary; having it be consistent throughout the
+software ecosystem is potentially a great enabler of
+interoperability.</p>
+<h2 data-number="6.3" id="but-couldnt-this-be-done-faster-with-reflection"><span class="header-section-number">6.3</span> But couldn’t this be done
+faster with reflection?<a href="#but-couldnt-this-be-done-faster-with-reflection" class="self-link"></a></h2>
+<p>No; Peter Dimov shares an interesting anecdote.</p>
+<blockquote>
+<p>I have in Mp11 the algorithm
+<code class="sourceCode default">mp_unique</code>, which takes a list of
+types and removes the duplicates. In the course of writing the
+reflection papers, their authors occasionally took Mp11 code examples
+and tried to show how they are elegantly implemented using value-based
+reflection metaprogramming.</p>
+</blockquote>
+<blockquote>
+<p>So, you take a
+<code class="sourceCode default">vector&lt;info&gt;</code> that contains
+types, and then you simply apply the existing algorithm
+<code class="sourceCode default">std::unique</code> to it, et voila… oh
+wait.</p>
+</blockquote>
+<blockquote>
+<p><code class="sourceCode default">std::unique</code> wants a sorted
+range, and you can’t <code class="sourceCode default">std::sort</code>
+the info vector, because info objects aren’t ordered, even when they
+refer to types.</p>
+</blockquote>
+<h1 data-number="7" id="implementability"><span class="header-section-number">7</span> Implementability<a href="#implementability" class="self-link"></a></h1>
+<p>The proposal has no questions on whether it <em>can</em> be
+implemented - the question is about the definition of the order.</p>
+<p>The concerns raised by the implementers so far have been mostly
+around having to bring the name mangler from the backend and make it
+accessible to the compiler front-end, because the obvious implementation
+is to define the comparison result on the mangled type strings; this
+option has been rejected by EWG.</p>
+<p>Making this order match up with
+<code class="sourceCode default">type_info::before</code> is a matter of
+bringing the name mangler for the correct platform to the frontend.</p>
+<p>It is the opinion of the authors that this doesn’t seem to be a
+layering violation, as the name mangling for a given platform is
+analogous to other platform properties, such as the size and alignment
+of pointers.</p>
+<p>If a platform does not have a name mangling strategy, <em>any</em>
+name mangling scheme will still result in a standards-conforming
+implementation; however, after much discussion, it seems a better
+direction to completely define the order in the standard itself.</p>
+<h1 data-number="8" id="proposal-1"><span class="header-section-number">8</span> Proposal<a href="#proposal-1" class="self-link"></a></h1>
+<p>This section sets out an approach for defining an ordering of all
+compile-time entities; that is, the definition of
+<code class="sourceCode default">SORT_KEY(X)</code> for a given
+<em>cv</em>-qualified type <code class="sourceCode default">X</code>;
+and the comparison function between these sort-key-tuples.</p>
+<p><strong>Note to reviewers:</strong> <em>any</em> well-defined order
+will satisfy the design requirements; the chief design element here is
+whether we have achieved a well-ordering, not what exactly it is. The
+only other considration is whether we can evolve the order as we
+introduce new entities into the language.</p>
+<h2 data-number="8.1" id="approach"><span class="header-section-number">8.1</span> Approach<a href="#approach" class="self-link"></a></h2>
+<ol type="1">
+<li>We define a <strong>lowering to a <em>sort-key-tuple</em></strong>
+for every entity in the language.</li>
+<li>The order is then defined on these <em>sort-key-tuples</em>.</li>
+</ol>
+<p>The entities we must order are:</p>
+<ol type="1">
+<li>namespaces
+<ol type="1">
+<li>the global namespace</li>
+<li>named namespaces</li>
+<li>the anonymous namespace</li>
+</ol></li>
+<li>cv-qualified types
+<ol type="1">
+<li>scalar types</li>
+<li>array types</li>
+<li>class and union types</li>
+<li>class and union template specializations</li>
+<li>anonymous versions of all of the above</li>
+<li>function types</li>
+</ol></li>
+<li>templates
+<ol type="1">
+<li>function templates</li>
+<li>class templates</li>
+<li>variable templates</li>
+<li>concepts</li>
+<li>type alias templates</li>
+<li>deduction guides</li>
+</ol></li>
+<li>partial template specializations
+<ol type="1">
+<li>partial function template specializations</li>
+<li>partial class template specializations</li>
+<li>partial variable template specializations</li>
+</ol></li>
+<li>parameters
+<ol type="1">
+<li>runtime-parameters</li>
+<li>type-parameters</li>
+<li>constant-parameters</li>
+<li>type-template parameters</li>
+<li>concept-parameters</li>
+<li>variable-template parameters</li>
+<li>parameter packs</li>
+</ol></li>
+<li>constants
+<ol type="1">
+<li>integral constants</li>
+<li>floating-point constants</li>
+<li>pointer and reference constants
+<ol type="1">
+<li>to functions</li>
+<li>to named entities of static storage duration</li>
+<li>to expressions</li>
+</ol></li>
+<li>class-type constants
+<ol type="1">
+<li>lambda literals</li>
+<li>constants of compound types usable as template arguments</li>
+</ol></li>
+</ol></li>
+<li>expressions</li>
+</ol>
+<h2 data-number="8.2" id="structure-of-sort-key-tuples"><span class="header-section-number">8.2</span> Structure of sort-key-tuples<a href="#structure-of-sort-key-tuples" class="self-link"></a></h2>
+<p>Every <em>sort-key-tuple</em> is of the form
+<code class="sourceCode default">(<em>element</em>...)</code>.</p>
+<p>where an element is one of:</p>
+<ul>
+<li><em>atom</em> (see <a href="#atoms">atoms</a>)</li>
+<li><em>name</em></li>
+<li><em>constant</em></li>
+<li><em>sort-key-tuple</em></li>
+</ul>
+<p>These tuples are then ordered lexicographically (ties broken in favor
+of shorter tuple), atoms first, then names, then constants, then other
+<em>sort-key-tuples</em>.</p>
+<p>Let us name this transformation as
+<code class="sourceCode default">sort_key(entity)</code>.</p>
+<p>The rest of the design is concerned with defining this
+transformation.</p>
+<h2 data-number="8.3" id="sort-scopes"><span class="header-section-number">8.3</span> sort-scopes<a href="#sort-scopes" class="self-link"></a></h2>
+<p>A sort-key for most entities is of the form</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) = (sort_key(sort-scope(x)), x-dependent-elements...)</span></code></pre></div>
+<p>This section deals with the sort-scope of an entity.</p>
+<p>To deal with anonymous types and templated entities like hidden
+friends, we have to observe more than just the namespace and class the
+entity is declared in; we must also observe anything at all that could
+contribute to the declaration, such as template parameters and arguments
+of partial and full template specializations of both class and function
+templates, alias templates, concepts, their parameter numbers (in case
+of default arguments), and so on. After that, we must make special
+allowances for entities that cannot be influenced by such surroundings,
+such as forward declaratios of named classes.</p>
+<h3 data-number="8.3.1" id="every-declaration-introduces-a-sort-scope."><span class="header-section-number">8.3.1</span> Every declaration introduces
+a sort-scope.<a href="#every-declaration-introduces-a-sort-scope." class="self-link"></a></h3>
+<ul>
+<li>Every declaration of an anonymous entity is ordered
+lexicographically within its sort-scope.</li>
+<li>Ties are not broken; there should be no conflicts, as all the
+context for a given <em>sort-key(x)</em> should be provided by the
+sort-scope of the declaration. (notably - all relevant parameters
+<em>and</em> their values should be part of the sort-key for a given
+declaration of an anonmous entity)</li>
+<li>most named entities are also ordered within their sort-scope, with
+the notable exception of named class types, which are ordered by their
+fully qualified name.</li>
+</ul>
+<h2 data-number="8.4" id="namespaces"><span class="header-section-number">8.4</span> Namespaces<a href="#namespaces" class="self-link"></a></h2>
+<p>This section deals with namespaces and their sort-keys.</p>
+<h3 data-number="8.4.1" id="the-global-namespace"><span class="header-section-number">8.4.1</span> The global namespace<a href="#the-global-namespace" class="self-link"></a></h3>
+<p>Let <em>x</em> be the global namespace.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (_namespace_, _global-namespace_)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := ()</span></code></pre></div>
+<h3 data-number="8.4.2" id="named-namespaces"><span class="header-section-number">8.4.2</span> Named namespaces<a href="#named-namespaces" class="self-link"></a></h3>
+<p>Every namespace (except for the global namespace) has a parent
+namespace, which is its immediately enclosing namespace.</p>
+<p>let <em>x</em> be some named namespace with simple-name
+“namespace_name”.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_key(parent_namespace), _namespace_, &quot;namespace_name&quot;)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span></code></pre></div>
+<h3 data-number="8.4.3" id="the-anonymous-namespace"><span class="header-section-number">8.4.3</span> The anonymous namespace<a href="#the-anonymous-namespace" class="self-link"></a></h3>
+<p>The anonymous namespace sorts after all the other namespaces.</p>
+<p>Let <em>x</em> be some anonymous namespace, with parent namespace
+<code class="sourceCode default">parent_namespace</code>.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_key(parent_namespace), _namespace_, _anonymous_)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span></code></pre></div>
+<h3 data-number="8.4.4" id="namespace-examples"><span class="header-section-number">8.4.4</span> Namespace examples<a href="#namespace-examples" class="self-link"></a></h3>
+<p>TODO</p>
+<h2 data-number="8.5" id="cv-qualified-types"><span class="header-section-number">8.5</span> cv-qualified types<a href="#cv-qualified-types" class="self-link"></a></h2>
+<h3 data-number="8.5.1" id="qualifiers"><span class="header-section-number">8.5.1</span> Qualifiers<a href="#qualifiers" class="self-link"></a></h3>
+<p>Qualifiers are each assigned a score</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>&amp;: 1</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>&amp;&amp;: 2</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>const: 3</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>volatile: 6</span></code></pre></div>
+<p>and ordering lowest-first after summing them.</p>
+<p>Therefore, for an unqualified type
+<code class="sourceCode default">T</code>, the order of all possible
+qualified types would be:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>  T</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>  T <span class="op">&amp;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>  T <span class="op">&amp;&amp;</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>  T <span class="kw">const</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>  T <span class="kw">const</span> <span class="op">&amp;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>  T <span class="kw">const</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>  T <span class="kw">volatile</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>  T <span class="kw">volatile</span> <span class="op">&amp;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>  T <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>  T <span class="kw">const</span> <span class="kw">volatile</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span></code></pre></div>
+<p>This is accomplished by putting the qualifier sequence into the tuple
+just after the typename.</p>
+<p>For a given type <code class="sourceCode default">T</code>, we
+define</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;) := const volatile &amp;</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;&amp;) := const volatile &amp;&amp;</span></code></pre></div>
+<p>so that we can put it into the
+<code class="sourceCode default">sort_key</code> tuple later.</p>
+<h3 data-number="8.5.2" id="scalar-types"><span class="header-section-number">8.5.2</span> Scalar Types<a href="#scalar-types" class="self-link"></a></h3>
+<p>All scalar types are built-in types, except for user-defined
+enumerations, which should be ordered as if they were class types.</p>
+<p>Simple scalar types (everything in this section but function types
+and pointer types) are not ordered by “name” - they are ordered using
+the rules in the table. All atoms are still ordered before them, any
+name is ordered after them, as are all sort-key-tuples.</p>
+<p>This is because some of the built-in types do not have names, only
+type aliases (such as
+<code class="sourceCode default">decltype(nullptr)</code>), and we do
+not order types by their aliases.</p>
+<p>This causes any built-in scalar types to be ordered before any
+compound types.</p>
+<p>In case of ties, built-in types with simple names shall be ordered
+before any nameless types.</p>
+<p>In particular, scalar types shall be ordered as follows:</p>
+<ol type="1">
+<li><code class="sourceCode default">void</code> comes first because
+it’s not reifiable,</li>
+<li>the type of <code class="sourceCode default">std::nullptr_t</code>
+as the first monostate</li>
+<li>any other monostates, if added, sorted alphabetically by their
+common names (to be specified explicitly if added)</li>
+<li><code class="sourceCode default">bool</code> as the first
+bi-state</li>
+<li>any other bi-states, if added, sorted alphabetically.</li>
+<li>Raw-memory types (<code class="sourceCode default">char</code>,
+<code class="sourceCode default">signed char</code>,
+<code class="sourceCode default">unsigned char</code>) (std::byte is an
+enumeration in <code class="sourceCode default">std</code> so it falls
+under different rules)</li>
+<li>Integral types in order of size, signed before unsigned
+(<code class="sourceCode default">short</code>,
+<code class="sourceCode default">unsigned    short</code>,
+<code class="sourceCode default">int</code>,
+<code class="sourceCode default">unsigned int</code>,
+<code class="sourceCode default">long</code>,
+<code class="sourceCode default">unsigned long</code>,
+<code class="sourceCode default">long long</code>,
+<code class="sourceCode default">unsigned long long</code>, followed by
+any implementation-defined wider integral types like
+<code class="sourceCode default">__int128_t</code> etc.). Intersperse
+any implementation-defined built-in integral types as needed between the
+above following those rules.</li>
+<li>Any remaining character types that are not type-aliases of any of
+the above, including unicode, according to the following rules: smallest
+first, unicode-specific variants after non-unicode variants.</li>
+<li>Floating-point types, in order of size. In case of ties,
+<code class="sourceCode default">float</code>,
+<code class="sourceCode default">double</code> and
+<code class="sourceCode default">long double</code> come before any
+other floating point types of the same size. Any decimal-floating-point
+types come after binary-floating-point types; if multiple floating point
+types of the same bit-length exist, break ties by the bit-size of the
+exponent, lower first.</li>
+<li>Implementation-defined vector-register types, ordered by the the
+integral type they consist of, and then by bit-size (example:
+<code class="sourceCode default">u8x16</code> from gcc’s
+documentation).</li>
+<li>Function types (internally ordered by rules in section <a href="#function-types">Function Types</a>)</li>
+<li>Pointer types (internally ordered by their pointee-type)</li>
+<li>Pointer-to-member types (internally ordered by pointee-type)</li>
+</ol>
+<h3 data-number="8.5.3" id="array-types"><span class="header-section-number">8.5.3</span> Array Types<a href="#array-types" class="self-link"></a></h3>
+<p>TODO: this section is not complete.</p>
+<p>Array types shall be ordered after scalar types but before class
+types.</p>
+<p>Given a non-array type <code class="sourceCode default">T</code></p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>sort_key(T[])  := (sort_key(T), [])</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>sort_key(T[n]) := (sort_key(T), [n])</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>sort_key(T[][n]) := (sort_key(T), [], [n])</span></code></pre></div>
+<h1 data-number="9" id="old-design-that-needs-to-be-revamped"><span class="header-section-number">9</span> Old design that needs to be
+revamped<a href="#old-design-that-needs-to-be-revamped" class="self-link"></a></h1>
+<h3 data-number="9.0.1" id="example-1-class-foo-is-declared-in-struct-bar"><span class="header-section-number">9.0.1</span> Example 1:
+<code class="sourceCode default">class foo</code> is declared in
+<code class="sourceCode default">struct bar</code>:<a href="#example-1-class-foo-is-declared-in-struct-bar" class="self-link"></a></h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> bar <span class="op">{</span> <span class="kw">class</span> foo; <span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>sort_key(foo) = (sort_key(bar), sort_key(foo)) = ((type, bar), (type, foo, ))</span></code></pre></div>
+<p>This shall hold for any of the above named scopes.</p>
+<h3 data-number="9.0.2" id="example"><span class="header-section-number">9.0.2</span> Example:<a href="#example" class="self-link"></a></h3>
+<p>Given</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> baz <span class="op">{</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> j;</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Then:</p>
+<ul>
+<li><code class="sourceCode default">sort_key(foo::bar::i)</code> is
+<code class="sourceCode default">((namespace, foo), (namespace, bar), (type, i, ))</code>.</li>
+<li><code class="sourceCode default">sort_key(baz::j)</code> is
+<code class="sourceCode default">((namespace, baz), (type, j, ))</code></li>
+</ul>
+<p>When compared, the result is that
+<code class="sourceCode default">baz::j</code> &lt;
+<code class="sourceCode default">foo::bar::i</code>, since
+<code class="sourceCode default">namespace baz</code> precedes
+<code class="sourceCode default">namespace foo</code>.</p>
+<h2 data-number="9.1" id="atoms"><span class="header-section-number">9.1</span> Atoms<a href="#atoms" class="self-link"></a></h2>
+<p>The atoms of <em>key-tuples</em> are ordered as follows:</p>
+<ol type="1">
+<li><em>global-namespace</em></li>
+<li><em>anonymous</em></li>
+<li>kinds (see <a href="#kinds">kinds</a>)</li>
+<li>qualifiers (see <a href="#qualifiers">qualifiers</a>)</li>
+<li><code class="sourceCode default">[]</code> (array of unknown
+bound)</li>
+<li><code class="sourceCode default">[n]</code> (array of known bound n)
+(ordered by <code class="sourceCode default">n</code> internally)</li>
+<li><code class="sourceCode default">*</code> (pointer)</li>
+<li>ellipsis (<code class="sourceCode default">...</code> in
+<code class="sourceCode default">f(...)</code>)</li>
+<li>parameter pack (<code class="sourceCode default">...</code> in
+<code class="sourceCode default">typename...</code>)</li>
+</ol>
+<h2 data-number="9.2" id="identifiers"><span class="header-section-number">9.2</span> identifiers<a href="#identifiers" class="self-link"></a></h2>
+<p>These are simple names (identifiers).</p>
+<p>Examples: “pair”, “string”, “unique_ptr”, “std”, “hashmap”,
+“absl”.</p>
+<h2 data-number="9.3" id="kinds"><span class="header-section-number">9.3</span> Kinds<a href="#kinds" class="self-link"></a></h2>
+<p>There are the following kind tokens that can appear in
+<em>key-tuples</em>.</p>
+<ol type="1">
+<li>value</li>
+<li>namespace</li>
+<li>type</li>
+<li>class template</li>
+<li>type alias template</li>
+<li>variable template</li>
+<li>concept</li>
+<li>function</li>
+</ol>
+<p>Note: everything but “values” is pretty simple, but we haven’t dealt
+with values extensively yet with the R1 of this paper, though we should
+just defer to <code class="sourceCode default">&lt;=&gt;</code> and
+require a default strong structural ordering for values that may be
+template arguments.</p>
+<h3 data-number="9.3.1" id="identifiers-1"><span class="header-section-number">9.3.1</span> Identifiers<a href="#identifiers-1" class="self-link"></a></h3>
+<h4 data-number="9.3.1.1" id="simple-names"><span class="header-section-number">9.3.1.1</span> Simple Names<a href="#simple-names" class="self-link"></a></h4>
+<p>Most names are strings that are valid (atomic) identifiers. Those are
+just themselves:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span> <span class="kw">struct</span> baz; <span class="op">}</span></span></code></pre></div>
+<p><code class="sourceCode default">foo</code>,
+<code class="sourceCode default">bar</code> and
+<code class="sourceCode default">baz</code> are such atomic
+identifiers.</p>
+<h4 data-number="9.3.1.2" id="unnamed-entities"><span class="header-section-number">9.3.1.2</span> Unnamed entities<a href="#unnamed-entities" class="self-link"></a></h4>
+<p>Unnamed entities are all given a name that is not an identifier (but
+is, in fact, a tuple), and are then numbered consecutively, starting
+with zero, based on their name-scope.</p>
+<p>Name-scopes are namespaces, classes, unions, functions, and
+enumerations.</p>
+<p>Function declarations are name-scoped to the function itself.</p>
+<p>Consider a lambda that appears as a default argument of a function
+template:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>T x <span class="op">=</span> <span class="op">[]{</span> <span class="cf">return</span> T<span class="op">{</span><span class="dv">0</span><span class="op">}</span>; <span class="op">}())</span>;</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co">//           ^^^^^^^^^^^^^^^^^^ this one</span></span></code></pre></div>
+<p>The <em>key-tuple</em> for
+<code class="sourceCode default">f&lt;int&gt;</code> is:</p>
+<p><code class="sourceCode default">(function, (f, (type, int)), (type, void), ((type, int)))</code></p>
+<p>The <em>key-tuple</em> for the lambda is:</p>
+<p><code class="sourceCode default">((function, (f, (type, int)), (type, void), ((type, int))), (type, (lambda, 0), ))</code>.</p>
+<p>Note: because of the regular structure of <em>key-tuples</em>, such
+anonymous classes will compare greater than any entity that has a simple
+identifier, due to tuples comparing greater than atoms (which simple
+names are).</p>
+<h5 data-number="9.3.1.2.1" id="lambda-types"><span class="header-section-number">9.3.1.2.1</span> Lambda types<a href="#lambda-types" class="self-link"></a></h5>
+<p>Types of lambda objects are ordered first by where they are declared,
+then by declaration order.</p>
+<p>In effect, we assign them the name
+<code class="sourceCode default">(lambda, #)</code> where
+<code class="sourceCode default">#</code> is the count of other unnamed
+entities in the name scope.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Banana <span class="op">{</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">int</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">void</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Banana</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Apple <span class="op">{</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">float</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">int</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Apple</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> j <span class="op">=</span> <span class="op">[]()</span> <span class="op">-&gt;</span> std<span class="op">::</span>string <span class="op">{}</span>; <span class="co">// 1st lambda instantiated in Apple</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>These would produce the following tuples:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Banana::i)) = ((namespace, Banana), (type, (lambda, 0), ));</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::i))  = ((namespace, Apple), (type, (lambda, 0), ));</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::j))  = ((namespace, Apple), (type, (lambda, 1), ));</span></code></pre></div>
+<p>Note: the empty bit after the identifier is the empty qualifier
+pack.</p>
+<h5 data-number="9.3.1.2.2" id="unnamed-struct-and-union-types"><span class="header-section-number">9.3.1.2.2</span> Unnamed
+<code class="sourceCode default">struct</code> and
+<code class="sourceCode default">union</code> types<a href="#unnamed-struct-and-union-types" class="self-link"></a></h5>
+<p>They are named, respectively,
+<code class="sourceCode default">(class, #)</code> and
+<code class="sourceCode default">(union, #)</code>.</p>
+<h3 data-number="9.3.2" id="namespaces-1"><span class="header-section-number">9.3.2</span> Namespaces<a href="#namespaces-1" class="self-link"></a></h3>
+<p>The <code class="sourceCode default">sort_key(namespace-name)</code>
+is <code class="sourceCode default">(namespace, identifier)</code>.</p>
+<p>This means that namespaces are ordered alphabetically by comparing
+namespace names at the same rank. A namespace comes before any of its
+subnamespaces.</p>
+<p>Example:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer1 <span class="op">{</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> i;</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer2 <span class="op">{</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner1 <span class="op">{</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner2 <span class="op">{</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The order of the three structs w/ type
+<code class="sourceCode default">i</code> types shall be</p>
+<p><code class="sourceCode default">sort_key(outer1::i) &lt; sort_key(outer2::inner1::i) &lt; sort_key(outer2::inner2::i)</code>.</p>
+<h3 data-number="9.3.3" id="types"><span class="header-section-number">9.3.3</span> Types<a href="#types" class="self-link"></a></h3>
+<p>The <code class="sourceCode default">sort_key</code> of a type is
+<code class="sourceCode default">(type, &lt;identifier&gt;, &lt;qualifiers&gt;)</code>.</p>
+<p>The <code class="sourceCode default">&lt;identifier&gt;</code> bit is
+a bit complicated, so let’s deal with the qualifiers first.</p>
+<p>Note: any name-scopes the
+<code class="sourceCode default">type</code> is declared in are part of
+the parent <em>key-tuple</em>. The
+<code class="sourceCode default">identifier</code> portion is
+complicated because of possible template arguments for types that are
+template specializations.</p>
+<h3 data-number="9.3.4" id="ordering-class-types"><span class="header-section-number">9.3.4</span> Ordering Class Types<a href="#ordering-class-types" class="self-link"></a></h3>
+<h4 data-number="9.3.4.1" id="ordering-simple-class-types"><span class="header-section-number">9.3.4.1</span> Ordering Simple Class
+Types<a href="#ordering-simple-class-types" class="self-link"></a></h4>
+<p>Class types shall be greater than scalar types.</p>
+<p>Since we cannot redeclare two types with the same name, class types
+shall be ordered alphabetically.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple <span class="op">{}</span>;</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Banana <span class="op">{}</span>;</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot <span class="op">{}</span>;</span></code></pre></div>
+<p>Would be ordered as
+<code class="sourceCode default">Apple &lt; Banana &lt; Carrot</code></p>
+<p>As such, we define sort key as:</p>
+<p><code class="sourceCode default">sort_key(Apple) = (type, Apple, )</code></p>
+<p><code class="sourceCode default">sort_key(Banana) = (type, Banana, )</code></p>
+<p><code class="sourceCode default">sort_key(Carrot) = (type, Carrot, )</code></p>
+<h4 data-number="9.3.4.2" id="non-type-template-parameters"><span class="header-section-number">9.3.4.2</span> Non Type Template
+Parameters<a href="#non-type-template-parameters" class="self-link"></a></h4>
+<p>NTTPs shall first be ordered by their type, then their value.</p>
+<p>Given:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> T<span class="op">&gt;</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> s <span class="op">{</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">decltype</span><span class="op">(</span>T<span class="op">)</span> i <span class="op">=</span> T;</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="dv">1</span><span class="bu">u</span><span class="op">&gt;</span> a;</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">&gt;</span> b;</span></code></pre></div>
+<p><code class="sourceCode default">sort_key(s&lt;1u&gt;) = ((type, (s, sort_key(1u))))</code></p>
+<p>We can define sort_key of <code class="sourceCode default">1u</code>
+as: <code class="sourceCode default">sort_key(1u) = ( sort_key(decltype(1u)), 1)</code></p>
+<p><code class="sourceCode default">s&lt;1u&gt;</code> shall be ordered
+before <code class="sourceCode default">s&lt;1.0f&gt;</code>, as
+integral types come before floating point types.</p>
+<p>NTTPs of the same type shall be lexicographically ordered by their
+scalar subobjects. Meaning</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> F <span class="kw">final</span> <span class="op">{</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> G <span class="kw">final</span> <span class="op">{</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> h;</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i;</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span> g;</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> j;</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>F f<span class="op">{{</span><span class="dv">0</span>,<span class="dv">1</span><span class="op">}</span>, <span class="dv">2</span><span class="op">}</span>;</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>F f2<span class="op">{{</span><span class="dv">1</span>,<span class="dv">2</span><span class="op">}</span>, <span class="dv">3</span><span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">sort_key(s&lt;f&gt;) &lt; sort_key(s&lt;f2&gt;)</code>;</p>
+<p>NTTPs of the same pointer or reference type shall be ordered by
+instantiation order.</p>
+<h4 data-number="9.3.4.3" id="ordering-class-template-specializations"><span class="header-section-number">9.3.4.3</span> Ordering Class Template
+Specializations<a href="#ordering-class-template-specializations" class="self-link"></a></h4>
+<p>Class templates shall be ordered by:</p>
+<ol type="1">
+<li>Class name, alphabetically.</li>
+<li>Template arguments, applied lexicographically.</li>
+</ol>
+<p>For example, given:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple;</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Banana;</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot;</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Carrot<span class="op">&gt;</span>;</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
+<p>Note,
+<code class="sourceCode default">sort_key(&lt;parameter&gt;)...</code>
+will be used to denote a tuple where
+<code class="sourceCode default">sort_key</code> has been applied to all
+parameters.</p>
+<p>For <code class="sourceCode default">void f(Foo, Bar)</code>
+<code class="sourceCode default">sort_key(&lt;parameter&gt;)...</code>
+would mean
+<code class="sourceCode default">(sort_key(Foo), sort_key(Bar))</code></p>
+<p><code class="sourceCode default">sort_key</code> of a class template
+shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;class template&gt;) = (type, (&lt;name&gt;, (sort_key(&lt;parameter&gt;)...)))</code></p>
+<p>So</p>
+<p><code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt; = (type, (Apple, (sort_key(Banana), sort_key(Carrot)), )</code></p>
+<p><code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt; = (type, (Apple, ((type, Banana, ), (type, Carrot, )), )</code></p>
+<p>Note: the empty bit after the identifier is the empty qualifier
+pack.</p>
+<p>The above would be ordered <code class="sourceCode default">sort_key(Apple&lt;Banana, Banana&gt;)</code>,
+<code class="sourceCode default">sort_key(Apple&lt;Banana, Carrot&gt;)</code>,
+<code class="sourceCode default">sort_key(Apple&lt;Carrot, Carrot&gt;</code>.</p>
+<h4 data-number="9.3.4.4" id="function-types"><span class="header-section-number">9.3.4.4</span> Function Types<a href="#function-types" class="self-link"></a></h4>
+<p>Function types shall be ordered by</p>
+<ol type="1">
+<li>Parameters, lexicographically.</li>
+<li>Return type, if known from the declaration.</li>
+</ol>
+<p>The <code class="sourceCode default">sort_key</code> of a function
+shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;function&gt;) = (function, &lt;name&gt;, (sort_key(&lt;parameter&gt;)...), sort_key(&lt;return type&gt;))</code></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span> i<span class="op">)</span>;</span></code></pre></div>
+<p>This function can be represented by: <code class="sourceCode default">(function, (foo, (type, void), ((type, int))))</code></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span><span class="op">)</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span>, <span class="dt">double</span><span class="op">)</span></span></code></pre></div>
+<p><code class="sourceCode default">sort_key(void foo(int)) = (function, foo, (type, void), ((type, int)))</code></p>
+<p><code class="sourceCode default">sort_key(void foo(int, double)) = (function, foo, (type, void), ((type, int), (type, double)))</code></p>
+<p>So, the type of <code class="sourceCode default">void foo(int)</code>
+would precede the type of
+<code class="sourceCode default">void foo(int, double)</code></p>
+<h4 data-number="9.3.4.5" id="member-function-types"><span class="header-section-number">9.3.4.5</span> Member Function Types<a href="#member-function-types" class="self-link"></a></h4>
+<p>Function types shall be ordered by</p>
+<ol type="1">
+<li>Return type</li>
+<li>The type of the class it is a member of.</li>
+<li>Parameters, lexicographically.</li>
+</ol>
+<p>The sort key of a member function shall be defined as:</p>
+<p><code class="sourceCode default">sort_key(&lt;member function&gt;) =</code></p>
+<p><code class="sourceCode default">(function, (&lt;name&gt;, sort_key(&lt;class&gt;)), sort_key(&lt;return type&gt;), (sort_key(&lt;parameter&gt;)...))))</code></p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> bar<span class="op">(</span><span class="dt">int</span> i, <span class="dt">float</span> j<span class="op">)</span>;</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p><code class="sourceCode default">sort_key(Foo::bar) =</code></p>
+<p><code class="sourceCode default">(type, Foo, ), (function, (bar, (type, Foo, )), (type, void), ((type, int, ), (type, float, ))))</code></p>
+<h4 data-number="9.3.4.6" id="variadic-function-types"><span class="header-section-number">9.3.4.6</span> Variadic Function Types<a href="#variadic-function-types" class="self-link"></a></h4>
+<p>Variadic function shall be ordered in a similar way. In a variadic
+function, the last argument is a variadic argument. A variadic argument
+shall be ordered immediately after its underlying type.</p>
+<p>Given:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">)</span>;</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">...)</span>;</span></code></pre></div>
+<p>In this case, the type of
+<code class="sourceCode default">void foo(Foo...)</code> is ordered
+immediately after the type of
+<code class="sourceCode default">void foo(Foo)</code>.</p>
+<p>We can represent these as:</p>
+<p><code class="sourceCode default">(function (type, void) (type, Foo, ))</code></p>
+<p><code class="sourceCode default">(function (type, void) (type, Foo, ...))</code></p>
+<h4 data-number="9.3.4.7" id="parameter-packs"><span class="header-section-number">9.3.4.7</span> Parameter Packs<a href="#parameter-packs" class="self-link"></a></h4>
+<p>Parameter are ordered as class templates.</p>
+<p>Given:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span><span class="op">...</span> Types<span class="op">&gt;</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Tuple <span class="op">{}</span>;</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">{}</span>;</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Bar <span class="op">{}</span>;</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;&gt;</span> t0;</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> t1;</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo<span class="op">&gt;</span> t2;</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Bar<span class="op">&gt;</span> t3;</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo, Bar<span class="op">&gt;</span> t4;</span></code></pre></div>
+<p>would be ordered:
+<code class="sourceCode default">Tuple&lt;&gt;</code> &lt;
+<code class="sourceCode default">Tuple&lt;int&gt;</code> &lt;
+<code class="sourceCode default">Tuple&lt;Bar&gt;</code> &lt;
+<code class="sourceCode default">Tuple&lt;Foo&gt;</code> &lt;
+<code class="sourceCode default">Tuple&lt;Foo, Bar&gt;</code></p>
+<h4 data-number="9.3.4.8" id="ordering-class-templates"><span class="header-section-number">9.3.4.8</span> Ordering Class Templates<a href="#ordering-class-templates" class="self-link"></a></h4>
+<p>Kinds of templates are ordered first by name, then by template
+arguments.</p>
+<p>Given:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span><span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">class</span> Template<span class="op">&gt;</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> two<span class="op">{}</span>;</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">struct</span> one<span class="op">{}</span>;</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">struct</span> zero<span class="op">{}</span>;</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>zero<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> value0;</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>one<span class="op">&lt;</span>zero<span class="op">&gt;</span> value1;</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>two<span class="op">&lt;</span>one<span class="op">&gt;</span> value2;</span></code></pre></div>
+<p>These are represented by tuples:</p>
+<p><code class="sourceCode default">sort_key(zero&lt;int&gt;) = (type, (zero, (type, int)))</code></p>
+<p><code class="sourceCode default">sort_key(one&lt;zero&gt;) = (type, (one, (class_template, zero))))</code></p>
+<p><code class="sourceCode default">sort_key(two&lt;one&gt;) = (type, (two, (class_template, one))))</code></p>
+<h4 data-number="9.3.4.9" id="variable-templates"><span class="header-section-number">9.3.4.9</span> Variable Templates<a href="#variable-templates" class="self-link"></a></h4>
+<p>Variable templates are ordered by name, then by template
+parameter.</p>
+<p><code class="sourceCode default">sort_key(&lt;variable_template&gt;) = (variable_template, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F, <span class="kw">typename</span> S<span class="op">&gt;</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>pair<span class="op">&lt;</span>F, S<span class="op">&gt;</span> pair_one_two <span class="op">=</span> <span class="op">{</span><span class="dv">1</span>, <span class="dv">2</span><span class="op">}</span>;</span></code></pre></div>
+<p>the type of
+<code class="sourceCode default">pair_one_two&lt;int, double&gt;</code>
+can be represented as:</p>
+<p><code class="sourceCode default">sort_key(pair_one_two&lt;int, double&gt;) = (variable_template, (pair_one_two, (type, int), (type, double)))</code></p>
+<h4 data-number="9.3.4.10" id="alias-templates"><span class="header-section-number">9.3.4.10</span> Alias Templates<a href="#alias-templates" class="self-link"></a></h4>
+<p>Alias templates are ordered alphabetically by name.</p>
+<p><code class="sourceCode default">sort_key(&lt;alias_template&gt;) = (alias_template, &lt;name&gt;)</code></p>
+<p>Given</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span> <span class="kw">class</span> T <span class="op">&gt;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> remove_cvref_t <span class="op">=</span> <span class="kw">typename</span> remove_cvref<span class="op">&lt;</span>T<span class="op">&gt;::</span>type;</span></code></pre></div>
+<p><code class="sourceCode default">sort_key(remove_cvref_t) = (alias_template, remove_cvref_t)</code></p>
+<h4 data-number="9.3.4.11" id="concepts"><span class="header-section-number">9.3.4.11</span> Concepts<a href="#concepts" class="self-link"></a></h4>
+<p>Concepts are ordered in a similar manner to variable templates.</p>
+<p><code class="sourceCode default">sort_key(&lt;concept&gt;) = (concept, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> F <span class="op">=</span> <span class="kw">decltype</span><span class="op">([](</span>T<span class="op">){})&gt;</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> f <span class="op">=</span> <span class="kw">requires</span> <span class="op">(</span>T i, F f <span class="op">=</span> <span class="op">[](</span>T<span class="op">){})</span> <span class="op">{</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>f<span class="op">(</span>i<span class="op">)}</span> <span class="op">-&gt;</span> std<span class="op">::</span>convertible_to<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>;</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<p>In order to order the type of the lambda declared in
+<code class="sourceCode default">concept f</code>,
+<code class="sourceCode default">concept f</code> must be comparable
+with other types.</p>
+<p>Concepts shall be ordered first by name, then by template
+arguments.</p>
+<p><code class="sourceCode default">sort_key(f&lt;int&gt;) = (concept, (f, (type, int), (lambda, 0)))</code></p>
+<h1 data-number="10" id="proposed-wording"><span class="header-section-number">10</span> Proposed Wording<a href="#proposed-wording" class="self-link"></a></h1>
+<p>(The wording is not complete; the design will be transcribed here
+once approved by EWG)</p>
+<p>In <span>17.11.1
+<a href="https://wg21.link/compare.syn">[compare.syn]</a></span>,
+add</p>
+<div class="add" style="color: #006e28">
+
+<div class="sourceCode" id="cb48"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>template &lt;class T, class U&gt;</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>struct type_order : integral_constant&lt;strong_ordering, <em>see below</em>&gt; {};</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>template &lt;class T, class U&gt;</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>inline constexpr strong_ordering type_order_v = type_order&lt;T, U&gt;::value;</span></code></pre></div>
+
+</div>
+<p>At the end of <span>17.11
+<a href="https://wg21.link/cmp">[cmp]</a></span>, just before
+<span>17.12
+<a href="https://wg21.link/support.coroutine">[support.coroutine]</a></span>,
+add:</p>
+<div class="add" style="color: #006e28">
+<p><strong>17.11.7: Type Ordering</strong></p>
+<p><span class="marginalizedparent"><a class="marginalized">1</a></span>
+For (possibly <em>cv</em>-qualified) types <em>X</em> and <em>Y</em>,
+the expression
+<code class="sourceCode default"><em>TYPE_ORDER(X, Y)</em></code> is a
+constant expression <span>7.7
+<a href="https://wg21.link/expr.const">[expr.const]</a></span> whose
+value is the value of an enumerator of
+<code class="sourceCode default">strong_ordering</code>, subject to the
+following constraints:</p>
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(1.1)</a></span>
+<code class="sourceCode default"><em>TYPE_ORDER(X, Y)</em></code> is
+<code class="sourceCode default">strong_ordering::equal</code> if and
+only if <em>X</em> and <em>Y</em> are the same type</li>
+<li><span class="marginalizedparent"><a class="marginalized">(1.2)</a></span>
+otherwise,
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(1.2.1)</a></span>
+<code class="sourceCode default"><em>TYPE_ORDER(X, Y)</em></code> is
+<code class="sourceCode default">strong_ordering::less</code> if and
+only if
+<code class="sourceCode default"><em>TYPE_ORDER(Y, X)</em></code> is
+<code class="sourceCode default">strong_ordering::greater</code>
+(<em>antisymmetry</em>)</li>
+<li><span class="marginalizedparent"><a class="marginalized">(1.2.2)</a></span>
+<code class="sourceCode default"><em>TYPE_ORDER(X, Y)</em></code> is
+<code class="sourceCode default">strong_ordering::less</code> if and
+only if <code class="sourceCode default"><em>SORT_KEY(X)</em> &lt; <em>SORT_KEY(Y)</em></code></li>
+</ul></li>
+</ul>
+<p><span class="marginalizedparent"><a class="marginalized">2</a></span>
+The name <code class="sourceCode default">type_order</code> denotes a
+<em>Cpp17BinaryTypeTrait</em> (20.15.2) with a base characteristic of
+<code class="sourceCode default">integral_constant&lt;strong_ordering, <em>TYPE_ORDER(X, Y)</em>&gt;</code>.
+<span class="marginalizedparent"><a class="marginalized">3</a></span>
+<code class="sourceCode default"><em>SORT_KEY</em>(X)_</code>, for a
+given <em>cv</em>-qualified type
+<code class="sourceCode default">X</code> is a <em>sort-key-tuple</em>
+where every element is one of: - [3.1] <em>sort-key-atom</em>, one of -
+[3.1.1] “namespace” - [3.1.2] “scalar” - [3.1.3] “enum” - [3.1.4]
+“union” - [3.1.5] “struct” - [3.1.7] “template” - [3.1.8] “concept” -
+[3.1.9] “requirement” - [3.1.10] “noexcept” - [3.1.11] “qual” - [3.1.12]
+“constant” - [3.1.13] “reference” - [3.1.14] “pointer” - [3.1.15]
+“anonymous” - [3.1.16] “expression” - [3.1.17] “default_argument” -
+[3.2] <em>name</em> - [3.3] a constant - [3.3.1] <em>signed integral
+value</em> - [3.3.2] <em>floating point value</em> - [3.3.3]
+<em>lambda-literal</em> - [3.5] a <em>sort-key-tuple</em></p>
+</div>
+<h1 data-number="11" id="acknowledgements"><span class="header-section-number">11</span> Acknowledgements<a href="#acknowledgements" class="self-link"></a></h1>
+<p>Thanks to all of the following:</p>
+<ul>
+<li>Davis Herring for his suggestions on ordering non-type template
+parameters.</li>
+<li>Ville Voutilainen for his critique of examples, and providing a
+simple way of explaining the motivation</li>
+<li>Peter Dimov for a helpful anecdote, now in the FAQ.</li>
+<li>Erich Keane for for pushing us back to the “implementation-defined”
+territory.</li>
+<li>Jens Maurer for his thorough review of the initial proposed wording
+and his guidance.</li>
+</ul>
+<h1 data-number="12" id="appendix-a-building-apply_canonicalized"><span class="header-section-number">12</span> Appendix A: building
+<code class="sourceCode default">apply_canonicalized</code><a href="#appendix-a-building-apply_canonicalized" class="self-link"></a></h1>
+<p>We will need a small metaprogramming library; a filter is difficult
+to do otherwise.</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> <span class="kw">struct</span> list <span class="op">{}</span>;</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="co">// apply&lt;F, list&lt;Ts...&gt;&gt; -&gt; F&lt;Ts...&gt;</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">extern</span> undefined _apply;</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a><span class="co">// concatenate&lt;list&lt;Ts...&gt;, list&lt;Us...&gt;, list&lt;Vs...&gt;&gt; -&gt; list&lt;Ts..., Us..., Vs...&gt;</span></span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">extern</span> undefined _concatenate;</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a><span class="co">// select: list&lt;T&gt; if true, list&lt;&gt; if false</span></span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span></code></pre></div>
+<p>Canonicalization is now just a basic not-in-place quicksort-ish
+thing:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span><span class="co">/*empty*/</span><span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="co">// a canonicalized T is just T</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things less than T</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE_ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="co">/*T*/</span>, <span class="co">//                        ~~~~~~~~~~~~~~~~</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things greater than T</span></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE_ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span> <span class="co">//                                     ~~~~~~~~~~~~~~~~</span></span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span></code></pre></div>
+<p>We now have
+<code class="sourceCode default">canonicalized&lt;Ts...&gt;</code> - but
+this still leaves <code class="sourceCode default">list</code> as a
+special type which we’d rather not expose to the user. Onto
+<code class="sourceCode default">apply_canonicalized</code>:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply_canonicalized <span class="op">=</span> apply<span class="op">&lt;</span>F, canonicalized<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span></code></pre></div>
+<h2 data-number="12.1" id="full-code-listing-as-tested-and-implemented"><span class="header-section-number">12.1</span> Full code listing as tested
+and implemented<a href="#full-code-listing-as-tested-and-implemented" class="self-link"></a></h2>
+<p>Here for completeness, feel free to skip.</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;compare&gt;</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;type_traits&gt;</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TYPE_ORDER</span><span class="op">(</span>x,<span class="pp"> </span>y<span class="op">)</span><span class="pp"> </span>type_order_v<span class="op">&lt;</span>x,<span class="pp"> </span>y<span class="op">&gt;</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> X, <span class="kw">typename</span> Y<span class="op">&gt;</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v;</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _apply;</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a><span class="co">// some user-type</span></span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> value_t <span class="op">:</span> std<span class="op">::</span>integral_constant<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>x<span class="op">)</span>, x<span class="op">&gt;</span> <span class="op">{}</span>;</span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> value_t<span class="op">&lt;</span>x<span class="op">&gt;</span> value_v<span class="op">{}</span>;</span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="co">// built-in</span></span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x, <span class="kw">auto</span> y<span class="op">&gt;</span></span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v<span class="op">&lt;</span>value_t<span class="op">&lt;</span>x<span class="op">&gt;</span>, value_t<span class="op">&lt;</span>y<span class="op">&gt;&gt;</span> <span class="op">=</span></span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a>    x <span class="op">&lt;=&gt;</span> y;</span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> list <span class="op">{}</span>;</span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _concatenate;</span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span>
+<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
+<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
+<span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
+<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
+<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE_ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
+<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span>,</span>
+<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE_ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
+<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span></span>
+<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span>
+<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>std<span class="op">::</span>same_as<span class="op">&lt;</span>canonicalized<span class="op">&lt;</span>value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;</span>, list<span class="op">&lt;</span>value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;&gt;)</span>;</span></code></pre></div>
+<h1 data-number="13" id="appendix-b-__pretty_function__-instability"><span class="header-section-number">13</span> Appendix B:
+<code class="sourceCode default">__PRETTY_FUNCTION__</code>
+instability<a href="#appendix-b-__pretty_function__-instability" class="self-link"></a></h1>
+<p>This example is available at https://godbolt.org/z/ojb9TnE99 .</p>
+<p>Consider the following program, contributed by Barry Revzin:</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;print&gt;</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E;</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>E<span class="op">&gt;</span> <span class="kw">struct</span> C;</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef DEFINED</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E <span class="op">{</span> hi, gašper <span class="op">}</span>;</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> show<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="ot">__PRETTY_FUNCTION__</span><span class="op">)</span>;</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>    show<span class="op">&lt;</span>C<span class="op">&lt;</span>E<span class="op">(</span><span class="dv">0</span><span class="op">)&gt;&gt;()</span>;</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>When compiled with
+<code class="sourceCode default">-std=c++23</code>, it yields the
+following output:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;(E)0&gt;]</span></code></pre></div>
+<p>However, with
+<code class="sourceCode default">-std=c++23 -DDEFINED</code>, it
+produces a different one:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;E::hi&gt;]</span></code></pre></div>
+<p>This makes external names of types incorporating enums as non-type
+template arguments have inconsistent between translation units.</p>
+<h1 data-number="14" id="bibliography"><span class="header-section-number">14</span> References<a href="#bibliography" class="self-link"></a></h1>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-P1985R3" class="csl-entry" role="doc-biblioentry">
+[P1985R3] Gašper Ažman, Mateusz Pusz, Colin MacLean, Bengt Gustafsonn,
+Corentin Jabot. 2022-09-17. Universal template parameters. <a href="https://wg21.link/p1985r3"><div class="csl-block">https://wg21.link/p1985r3</div></a>
+</div>
+<div id="ref-P2300R7" class="csl-entry" role="doc-biblioentry">
+[P2300R7] Eric Niebler, Michał Dominiak, Georgy Evtushenko, Lewis Baker,
+Lucian Radu Teodorescu, Lee Howes, Kirk Shoop, Michael Garland, Bryce
+Adelstein Lelbach. 2023-04-21. `std::execution`. <a href="https://wg21.link/p2300r7"><div class="csl-block">https://wg21.link/p2300r7</div></a>
+</div>
+<div id="ref-P2320R0" class="csl-entry" role="doc-biblioentry">
+[P2320R0] Andrew Sutton, Wyatt Childers, Daveed Vandevoorde. 2021-02-15.
+The Syntax of Static Reflection. <a href="https://wg21.link/p2320r0"><div class="csl-block">https://wg21.link/p2320r0</div></a>
+</div>
+<div id="ref-P2841R1" class="csl-entry" role="doc-biblioentry">
+[P2841R1] Corentin Jabot, Gašper Ažman. 2023-10-14. Concept Template
+Parameters. <a href="https://wg21.link/p2841r1"><div class="csl-block">https://wg21.link/p2841r1</div></a>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
