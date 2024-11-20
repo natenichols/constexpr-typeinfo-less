@@ -622,7 +622,7 @@ Add feature-test macro into [version.syn]{.sref} in section 2
 
 :::add
 
-#define __cpp_lib_type_order 24XXXXL // also in <compare>
+#define __cpp_lib_type_order 2024XXL // also in <compare>
 
 :::
 
