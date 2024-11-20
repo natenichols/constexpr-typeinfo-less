@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++2b",
+      "-Wall",
+      "-o",
+      "tests",
+      "spec.cpp"
+    ],
+    "directory": "/Users/atomicity/work/papers/constexpr-typeinfo-less",
+    "file": "/Users/atomicity/work/papers/constexpr-typeinfo-less/spec.cpp",
+    "output": "/Users/atomicity/work/papers/constexpr-typeinfo-less/tests"
+  }
+]

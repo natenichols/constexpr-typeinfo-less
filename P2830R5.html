@@ -424,7 +424,7 @@ Ordering</h1>
 <table style="border:none;float:right">
   <tr>
     <td>Document #:</td>
-    <td>P2830R6</td>
+    <td>P2830R5</td>
   </tr>
   <tr>
     <td>Date:</td>
@@ -689,10 +689,6 @@ it</li>
 leave it implementation defined</li>
 <li>wrote wording and relegated the sketch of the completely-defined
 order to a historical appendix</li>
-</ul></li>
-<li>Revision 6
-<ul>
-<li>added feature-test macro</li>
 </ul></li>
 </ol>
 <h1 data-number="3" id="motivation"><span class="header-section-number">3</span> Motivation<a href="#motivation" class="self-link"></a></h1>
@@ -1212,12 +1208,6 @@ template <em>T</em>, where type-ids <em>A</em> =
 <em>Y</em> for some <em>k</em>, and <em>a</em><sub>i</sub> =
 <em>b</em><sub>i</sub> for all other <em>i</em> != <em>k</em>. Then
 <code class="sourceCode default"><em>TYPE_ORDER(X, Y)</em> == <em>TYPE_ORDER(A, B)</em></code>.</p>
-</div>
-<p>Add feature-test macro into <span>17.3.2
-<a href="https://wg21.link/version.syn">[version.syn]</a></span> in
-section 2</p>
-<div class="add" style="color: #006e28">
-<p>#define __cpp_lib_type_order 24XXXXL // also in <compare></p>
 </div>
 <h1 data-number="7" id="faq"><span class="header-section-number">7</span> FAQ<a href="#faq" class="self-link"></a></h1>
 <h2 data-number="7.1" id="why-should-this-be-standardized"><span class="header-section-number">7.1</span> Why should this be
