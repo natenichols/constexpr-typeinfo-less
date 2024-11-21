@@ -20,7 +20,7 @@ This paper explores a standardized, constexpr ordering of types in C++.
 
 This paper is split into two parts:
 
-1. the design of the exposition-only function `TYPE_ORDER(x, y)`, which deals with
+1. the design of the exposition-only function `TYPE-ORDER(x, y)`, which deals with
    how such an order should be defined,
 2. how to expose this capability to the programmer (syntax).
 
@@ -36,7 +36,7 @@ This paper is split into two parts:
     - Add appendix
 2. Revision 2
     - Presented at the EWGi in Tokyo.
-    - Propose to make the `TYPE_ORDER(X, Y)` definition `constexpr` and
+    - Propose to make the `TYPE-ORDER(X, Y)` definition `constexpr` and
       _implementation-defined_, as suggested by EWGi and BSI reviewers.
     - added wording
     - added more motivating examples
@@ -86,7 +86,7 @@ The goal here is to provide a _flexible_ language mechanism to let both
 `Foo<A, B, C>` and `Foo<C, B, A>` produce the same underlying
 `Foo_impl<A, B, C>`.
 
-The reason we start with `TYPE_ORDER()` and not "just give me typesets" is that we
+The reason we start with `TYPE-ORDER()` and not "just give me typesets" is that we
 need flexibility; consider
 
 - a given library might want to deduplicate on a part and keep either last or
@@ -102,7 +102,7 @@ need flexibility; consider
     `Matrix<float, policy1, policy2, policy3>` should only deduplicate
     policies.
 
-We must provide `TYPE_ORDER` in order to `sort` and `unique`; they are required
+We must provide `TYPE-ORDER` in order to `sort` and `unique`; they are required
 building blocks for any `set` primitive. Put another way, even if we
 standardized a `set`, we'd need to somehow canonicalize the order (due to
 mangling and debug info), leading us back here.
@@ -118,11 +118,11 @@ function table.
 This section introduces the kind of code we would like to write, regardless of
 how this feature ends up being spelled. To not prejudice the reader in this
 section, please assume the existence of an exposition-only `consteval` macro 
-`TYPE_ORDER(x, y) -> std::strong_ordering` whose arguments can be any cv-ref
+`TYPE-ORDER(x, y) -> std::strong_ordering` whose arguments can be any cv-ref
 qualified types.
 
-**Note:** while `TYPE_ORDER(x, y)` is defined on types, we can define a set of
-class templates that take an arbitrary template argument, and `TYPE_ORDER`
+**Note:** while `TYPE-ORDER(x, y)` is defined on types, we can define a set of
+class templates that take an arbitrary template argument, and `TYPE-ORDER`
 those; this induces an order on all entities that can be template arguments.
 
 Crucially, also consider the interactions with [@P1985R3] and [@P2841R1], which
@@ -189,15 +189,15 @@ template <typename... Ts>
 using variant_for = apply_canonicalized<std::variant, Ts...>;
 ```
 
-Building `apply_canonicalized` is not terribly difficult, as long as we have `TYPE_ORDER`.
+Building `apply_canonicalized` is not terribly difficult, as long as we have `TYPE-ORDER`.
 Please see the appendices on how to do it.
 
 It *would* be nice if `apply_canonicalized` was a language built-in, but to do that,
-we need to first define `TYPE_ORDER(x, y)`. After we define `TYPE_ORDER`, putting
+we need to first define `TYPE-ORDER(x, y)`. After we define `TYPE-ORDER`, putting
 `apply_canonicalized` into `type_traits` is a far simpler proposition.
 
 **Note:** `apply_canonicalized` is roughly `mp11::mp_sort` + `mp11::unique`
-with the order derived from `TYPE_ORDER`.
+with the order derived from `TYPE-ORDER`.
 
 
 Effectively any time a variant is type-indexed instead of integer-indexed, we
@@ -365,7 +365,7 @@ EWG again to implementation-defined.
 
 This paper proposes the implementation-defined version.
 
-## Desirable properties of `TYPE_ORDER(x, y)`
+## Desirable properties of `TYPE-ORDER(x, y)`
 
 ### Stability
 
@@ -388,7 +388,7 @@ values of `std::expected` or similar, and compromising that is undesirable.
 The ordering should be self-consistent, that is, for all possible template
 arguments `T`, `U`, and any unary template `some_template`:
 
-`TYPE_ORDER(T, U) == TYPE_ORDER(some_template<T>, some_template<U>)`.
+`TYPE-ORDER(T, U) == TYPE-ORDER(some_template<T>, some_template<U>)`.
 
 
 ### Reflection compatibility
@@ -406,9 +406,9 @@ objects, and we need this solved sooner than that.
 
 ### non-goal: Consistency with `type_info::before()`
 
-Ideally, whenever `typeid(x).before(typeid(y)) == true`, then `TYPE_ORDER(x, y) ==
+Ideally, whenever `typeid(x).before(typeid(y)) == true`, then `TYPE-ORDER(x, y) ==
 std::strong_ordering::less`. The converse obviously cannot be true, since
-`TYPE_ORDER(x, y)` is finer than the order induced by `type_info::before()`.
+`TYPE-ORDER(x, y)` is finer than the order induced by `type_info::before()`.
 
 However, the standard currently says
 
@@ -468,7 +468,7 @@ implementations, however, already have representation on the committee, and
 will veto any truly unimplementable things in this space.
 
 
-### `TYPE_ORDER(X, Y)` already has public-facing API implications
+### `TYPE-ORDER(X, Y)` already has public-facing API implications
 
 The "normalized" versions of types will inevitably show up in function
 signatures; if different compilers on the same platform produced different
@@ -509,29 +509,29 @@ be independently cached and compared as-needed.
 
 ## Semantics
 
-Let `X` and `Y` be (possibly cv-ref) qualified types, and `TYPE_ORDER(X, Y)` be an exposition-only macro.
+Let `X` and `Y` be (possibly cv-ref) qualified types, and `TYPE-ORDER(X, Y)` be an exposition-only macro.
 
-Then, `TYPE_ORDER(X, Y)` denotes a constant expression of type `std::strong_ordering`.
+Then, `TYPE-ORDER(X, Y)` denotes a constant expression of type `std::strong_ordering`.
 
-- `std::same_as<X, Y> == true` if and only if `TYPE_ORDER(X, Y) == std::strong_ordering::equal`.
-- Otherwise, `TYPE_ORDER(X, Y)` is either `std::strong_ordering::less` or
+- `std::same_as<X, Y> == true` if and only if `TYPE-ORDER(X, Y) == std::strong_ordering::equal`.
+- Otherwise, `TYPE-ORDER(X, Y)` is either `std::strong_ordering::less` or
   `std::strong_ordering::greater`. Which of those is implementation-defined,
   subject to the following semantic constraints.
 
-Implementations must define `TYPE_ORDER(X, Y)` such that it is an ordering, that is,
+Implementations must define `TYPE-ORDER(X, Y)` such that it is an ordering, that is,
 it is transitive and antisymmetric; that is
 
-- if `TYPE_ORDER(X, Y) == std::strong_ordering::less`, then 
-  `TYPE_ORDER(Y, X) == `std::strong_ordering::greater` and vice versa
-- if `TYPE_ORDER(X, Y) == std::strong_ordering::less` and `TYPE_ORDER(Y, Z) ==
-  std::strong_ordering::less`, then `TYPE_ORDER(X, Z)` is also
+- if `TYPE-ORDER(X, Y) == std::strong_ordering::less`, then 
+  `TYPE-ORDER(Y, X) == `std::strong_ordering::greater` and vice versa
+- if `TYPE-ORDER(X, Y) == std::strong_ordering::less` and `TYPE-ORDER(Y, Z) ==
+  std::strong_ordering::less`, then `TYPE-ORDER(X, Z)` is also
   `std::strong_ordering::less`.
 
 Implementations are encouraged, but not required to, make the order recursively-consistent. In other words:
 
 For any class template `template <..., typename Pi, ...> class X`, where `Pi` is the `i`-th template argument,
 and any two types `T` and `U`: 
-`TYPE_ORDER(T, U) == TYPE_ORDER(X<..., T, ...>, X<..., U, ...>)` if only the `i`th template argument is varied.
+`TYPE-ORDER(T, U) == TYPE-ORDER(X<..., T, ...>, X<..., U, ...>)` if only the `i`th template argument is varied.
 
 If an implementation makes the order recursively consistent, it should document this fact.
 
@@ -542,7 +542,7 @@ EWG affirmed a library name to access the ordering.
 ```cpp
 // <compare>
 template <typename T, typename U>
-inline constexpr std::strong_ordering type_order_v = TYPE_ORDER(T, U); /* see below */
+inline constexpr std::strong_ordering type_order_v = TYPE-ORDER(T, U); /* see below */
 template <typename T, typename U>
 struct type_order : integral_constant<strong_ordering, type_order_v<T, U>> {};
 ```
@@ -592,29 +592,46 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 
 :::add
 
-**17.11.7: Type Ordering**
+**17.11.7: Type Ordering** [compare.type]
 
-[1]{.pnum} For (possibly _cv_-qualified) types _X_ and _Y_, the expression
-`@_TYPE_ORDER(X, Y)_@` is a constant expression [expr.const]{.sref} whose
-implementation-defined value is the value of an enumerator of
-`strong_ordering`, subject to the following constraints:
+There is an implementation-defined total ordering of all types _TYPE-ORDER_.
+The `type_order` class template and `type_order_v` variable template allow querying
+the relative positions of pairs of types within this total order.
 
-- [1.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
+[1]{.pnum} For types _X_ and _Y_, the expression `@_TYPE-ORDER(X, Y)_@` is a
+constant expression [expr.const]{.sref} whose implementation-defined value is
+the value of an enumerator of `strong_ordering`, subject to the following
+constraints:
+
+- [1.1]{.pnum} `@_TYPE-ORDER(X, Y)_@` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
 - [1.2]{.pnum} otherwise,
-  - [1.2.1]{.pnum} `@_TYPE_ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE_ORDER(Y, X)_@` is `strong_ordering::greater` (_antisymmetry_)
-  - [1.2.2]{.pnum} for all (possibly _cv_-qualified) types _Z_,
-    if both `@_TYPE_ORDER(X, Y)_@` and `@_TYPE_ORDER(Y, Z)_@` are `strong_ordering::less`,
-    then `@_TYPE_ORDER(X, Z)_@` is also `strong_ordering::less` (_transitivity_)
+  - [1.2.1]{.pnum} `@_TYPE-ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE-ORDER(Y, X)_@` is `strong_ordering::greater` (_antisymmetry_)
+  - [1.2.2]{.pnum} for all types _Z_,
+    if both `@_TYPE-ORDER(X, Y)_@` and `@_TYPE-ORDER(Y, Z)_@` are `strong_ordering::less`,
+    then `@_TYPE-ORDER(X, Z)_@` is also `strong_ordering::less` (_transitivity_)
 
-[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE_ORDER(X, Y)_@>`.
+[Note: `int`, `const int` and `int&` are different types -- end note]
+
+[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER(X, Y)_@>`.
 
 [3]{.pnum} _Recommended practice_: The implementation is encouraged to do the equivalent of alphabetically comparing the linkage-names of the types to allow for consistency across translation units.
 
-[4]{.pnum} _Recommended practice_: (self-consistency) 
-For (possibly _cv_-qualified) types _X_ and _Y_ and a class template _T_,
-where type-ids _A_ = _T_<_a_~1~, ..., _a_~n~> and _B_ = _T_<_b_~1~, ..., _b_~n~> are specializations of _T_, 
-_a_~k~ = _X_ and _b_~k~ = _Y_ for some _k_, and _a_~i~ = _b_~i~ for all other _i_ != _k_.
-Then `@_TYPE_ORDER(X, Y)_@ == @_TYPE_ORDER(A, B)_@`.
+[4]{.pnum} _Recommended practice_: The implementation is encouraged to choose an ordering with the following properties:
+
+[4.1]{.pnum} (self-consistency, lexicographical order)
+Let _X_ and _Y_ be types, T a class template,
+_A_ = _T_<_a_~1~, ..., _a_~n~> and _B_ = _T_<_b_~1~, ..., _b_~n~> specializations of _T_,
+and _a_~k~ = _X_ and _b_~k~ = _Y_ for some _k_ be the first differing template
+argument between _A_ and _B_ (_a_~i~ = _b_~i~ for all _i_ < _k_).
+Then `@_TYPE-ORDER(X, Y)_@ == @_TYPE-ORDER(A, B)_@`.
+[Note: the order should be lexicographical on type template arguments, if possible for the implementation -- end note]
+
+[4.2]{.pnum} (argument list consistency)
+Let `T` and `U` be class templates, _a~k~_ and _b~k~ be the first differing
+template arguments in the type-ids _A_ = _T<a~1~, ..., a_~n~>_ and _B_ = _T<b~1~, ..., b_~n~>_
+for some _k_, and let _C_ = _U<a~1~, ..., a_~n~>_ and _D_ = _U<b~1~, ..., b_~n~>_ be valid type-ids.
+Then `@_TYPE-ORDER_(_A_, _B_) == @_TYPE-ORDER_(_C_, _D_)_@`.
+[Note: template argument lists should impose the same order regardless of the template they apply to -- end note]
 
 :::
 
@@ -625,6 +642,12 @@ Add feature-test macro into [version.syn]{.sref} in section 2
 #define __cpp_lib_type_order 2024XXL // also in <compare>
 
 :::
+
+## Notes on wording
+
+- I'd like to thank Lewis Baker and Davis Herring for reminding me that I should probably make an introductory paragraph.
+- Davis Herring suggested adding a note to remind readers that `int`, `const int` and `int&` are different types.
+- 
 
 # FAQ
 
@@ -703,7 +726,7 @@ Specifically:
 
 ```cpp
 template <universal template X, universal template Y>
-inline constexpr strong_ordering entity_order_v = TYPE_ORDER(X, Y); /* see below */
+inline constexpr strong_ordering entity_order_v = TYPE-ORDER(X, Y); /* see below */
 template <universal template X, universal template Y>
 struct entity_order : integral_constant<strong_ordering, entity_order_v<X, Y>> {};
 ```
@@ -724,7 +747,7 @@ Specifically:
 
 ```cpp
 consteval std::partial_ordering partial_order(std::meta::info x, std::meta::info y) {
-    return __comparable(x, y) ? TYPE_ORDER(x, y) : std::partial_order::unordered;
+    return __comparable(x, y) ? TYPE-ORDER(x, y) : std::partial_order::unordered;
 }
 ```
 
@@ -841,10 +864,10 @@ list<T> _canon<T>;
 template <typename T, typename... Ts>
 concatenate<
     // canonicalized things less than T
-    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) < 0), Ts>...>>,
+    apply<canonicalized, concatenate<select<(TYPE-ORDER(Ts, T) < 0), Ts>...>>,
     list<T> /*T*/, //                        ~~~~~~~~~~~~~~~~
     // canonicalized things greater than T
-    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) > 0), Ts>... >>
+    apply<canonicalized, concatenate<select<(TYPE-ORDER(Ts, T) > 0), Ts>... >>
     > //                                     ~~~~~~~~~~~~~~~~
 _canon<T, Ts...>;
 ```
@@ -867,7 +890,7 @@ Here for completeness, feel free to skip.
 
 struct undefined;
 
-#define TYPE_ORDER(x, y) type_order_v<x, y>
+#define TYPE-ORDER(x, y) type_order_v<x, y>
 
 template <typename X, typename Y>
 constexpr inline std::strong_ordering type_order_v;
@@ -925,9 +948,9 @@ list<T> _canon<T>;
 
 template <typename T, typename... Ts>
 concatenate<
-    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) < 0), Ts>...>>,
+    apply<canonicalized, concatenate<select<(TYPE-ORDER(Ts, T) < 0), Ts>...>>,
     list<T>,
-    apply<canonicalized, concatenate<select<(TYPE_ORDER(Ts, T) > 0), Ts>... >>
+    apply<canonicalized, concatenate<select<(TYPE-ORDER(Ts, T) > 0), Ts>... >>
     >
 _canon<T, Ts...>;
 
@@ -1323,7 +1346,7 @@ void foo(S<x>) {}
 
 inline constexpr void (*b)(S<0>) = &foo;
 
-inline constexpr auto x = TYPE_ORDER(S<x>, S<y>); // not equal
+inline constexpr auto x = TYPE-ORDER(S<x>, S<y>); // not equal
 ```
 
 We must therefore sort arbitrary expressions; I propose we avoid that by making
