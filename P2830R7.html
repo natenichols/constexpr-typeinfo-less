@@ -1232,13 +1232,13 @@ if possible for the implementation – end note]</p>
 (argument list consistency) Let
 <code class="sourceCode default">T</code> and
 <code class="sourceCode default">U</code> be class templates,
-<em>a<sub>k</sub></em> and <em>b<sub>k</sub> be the first differing
+<em>a<sub>k</sub></em> and <em>b<sub>k</sub></em> be the first differing
 template arguments in the type-ids <em>A</em> = <em>T&lt;a<sub>1</sub>,
-…, a</em><sub>n</sub>&gt;</em> and <em>B</em> = <em>T&lt;b<sub>1</sub>,
-…, b</em><sub>n</sub>&gt;<em> for some <em>k</em>, and let <em>C</em> =
-<em>U&lt;a<sub>1</sub>, …, a</em><sub>n</sub>&gt;</em> and <em>D</em> =
-<em>U&lt;b<sub>1</sub>, …, b</em><sub>n</sub>&gt;_ be valid type-ids.
-Then <code class="sourceCode default"><em>TYPE-ORDER</em>(<em>A</em>, <em>B</em>) ==_TYPE-ORDER_(_C_, _D_)_@</code>.
+…, a<sub>n</sub>&gt;</em> and <em>B</em> = <em>T&lt;b<sub>1</sub>, …,
+b<sub>n</sub>&gt;</em> for some <em>k</em>, and let <em>C</em> =
+<em>U&lt;a<sub>1</sub>, …, a<sub>n</sub>&gt;</em> and <em>D</em> =
+<em>U&lt;b<sub>1</sub>, …, b<sub>n</sub>&gt;</em> be valid type-ids.
+Then <code class="sourceCode default"><em>TYPE-ORDER(A, B)</em> == <em>TYPE-ORDER(C, D)</em></code>.
 [Note: template argument lists should impose the same order regardless
 of the template they apply to – end note]</p>
 </div>
@@ -1246,7 +1246,9 @@ of the template they apply to – end note]</p>
 <a href="https://wg21.link/version.syn">[version.syn]</a></span> in
 section 2</p>
 <div class="add" style="color: #006e28">
-<p>#define __cpp_lib_type_order 2024XXL // also in <compare></p>
+
+<div class="sourceCode" id="cb18"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>#define __cpp_lib_type_order 2024XXL // also in &lt;compare&gt;</span></code></pre></div>
+
 </div>
 <h2 data-number="6.1" id="notes-on-wording"><span class="header-section-number">6.1</span> Notes on wording<a href="#notes-on-wording" class="self-link"></a></h2>
 <ul>
@@ -1336,10 +1338,10 @@ options<a href="#appendix-a-discarded-syntax-options" class="self-link"></a></h1
 <h2 data-number="10.1" id="variable-template-stdentity_orderingx-y"><span class="header-section-number">10.1</span> variable template
 <code class="sourceCode default">std::entity_ordering&lt;X, Y&gt;</code><a href="#variable-template-stdentity_orderingx-y" class="self-link"></a></h2>
 <p>Specifically:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> strong_ordering entity_order_v <span class="op">=</span> TYPE<span class="op">-</span>ORDER<span class="op">(</span>X, Y<span class="op">)</span>; <span class="co">/* see below */</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> entity_order <span class="op">:</span> integral_constant<span class="op">&lt;</span>strong_ordering, entity_order_v<span class="op">&lt;</span>X, Y<span class="op">&gt;&gt;</span> <span class="op">{}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> strong_ordering entity_order_v <span class="op">=</span> TYPE<span class="op">-</span>ORDER<span class="op">(</span>X, Y<span class="op">)</span>; <span class="co">/* see below */</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>universal <span class="kw">template</span> X, universal <span class="kw">template</span> Y<span class="op">&gt;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> entity_order <span class="op">:</span> integral_constant<span class="op">&lt;</span>strong_ordering, entity_order_v<span class="op">&lt;</span>X, Y<span class="op">&gt;&gt;</span> <span class="op">{}</span>;</span></code></pre></div>
 <p>This is a better option than Option 1 if we get universal template
 parameters, as we really want to also order class templates, not just
 types.</p>
@@ -1351,9 +1353,9 @@ slightly less obvious than
 shouldn’t have trouble finding either.</p>
 <h2 data-number="10.2" id="reflection"><span class="header-section-number">10.2</span> reflection<a href="#reflection" class="self-link"></a></h2>
 <p>Specifically:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> std<span class="op">::</span>partial_ordering partial_order<span class="op">(</span>std<span class="op">::</span>meta<span class="op">::</span>info x, std<span class="op">::</span>meta<span class="op">::</span>info y<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> __comparable<span class="op">(</span>x, y<span class="op">)</span> <span class="op">?</span> TYPE<span class="op">-</span>ORDER<span class="op">(</span>x, y<span class="op">)</span> <span class="op">:</span> std<span class="op">::</span>partial_order<span class="op">::</span>unordered;</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> std<span class="op">::</span>partial_ordering partial_order<span class="op">(</span>std<span class="op">::</span>meta<span class="op">::</span>info x, std<span class="op">::</span>meta<span class="op">::</span>info y<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> __comparable<span class="op">(</span>x, y<span class="op">)</span> <span class="op">?</span> TYPE<span class="op">-</span>ORDER<span class="op">(</span>x, y<span class="op">)</span> <span class="op">:</span> std<span class="op">::</span>partial_order<span class="op">::</span>unordered;</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>We could standardize a type order as a function on
 <code class="sourceCode default">std::meta::info</code> objects in
 <code class="sourceCode default">std::meta</code>. However, once we’re
@@ -1369,8 +1371,8 @@ parameter that we already have.</p>
 <h2 data-number="10.3" id="heterogeneous-constexpr-stdtype_identityoperator-bad"><span class="header-section-number">10.3</span> heterogeneous <code class="sourceCode default">constexpr std::type_identity::operator&lt;=&gt;</code>
 (bad)<a href="#heterogeneous-constexpr-stdtype_identityoperator-bad" class="self-link"></a></h2>
 <p>Specifically:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>strong_ordering <span class="kw">operator</span><span class="op">&lt;=&gt;(</span>std<span class="op">::</span>type_identity<span class="op">&lt;</span>T<span class="op">&gt;</span>, std<span class="op">::</span>type_identity<span class="op">&lt;</span>U<span class="op">&gt;)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>strong_ordering <span class="kw">operator</span><span class="op">&lt;=&gt;(</span>std<span class="op">::</span>type_identity<span class="op">&lt;</span>T<span class="op">&gt;</span>, std<span class="op">::</span>type_identity<span class="op">&lt;</span>U<span class="op">&gt;)</span>;</span></code></pre></div>
 <p><strong>Pros:</strong></p>
 <ul>
 <li>No new names.</li>
@@ -1423,161 +1425,161 @@ has similar issues.</p>
 <code class="sourceCode default">apply_canonicalized</code><a href="#appendix-b-building-apply_canonicalized" class="self-link"></a></h1>
 <p>We will need a small metaprogramming library; a filter is difficult
 to do otherwise.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> <span class="kw">struct</span> list <span class="op">{}</span>;</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co">// apply&lt;F, list&lt;Ts...&gt;&gt; -&gt; F&lt;Ts...&gt;</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">extern</span> undefined _apply;</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">// concatenate&lt;list&lt;Ts...&gt;, list&lt;Us...&gt;, list&lt;Vs...&gt;&gt; -&gt; list&lt;Ts..., Us..., Vs...&gt;</span></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">extern</span> undefined _concatenate;</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="co">// select: list&lt;T&gt; if true, list&lt;&gt; if false</span></span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> <span class="kw">struct</span> list <span class="op">{}</span>;</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co">// apply&lt;F, list&lt;Ts...&gt;&gt; -&gt; F&lt;Ts...&gt;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">extern</span> undefined _apply;</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co">// concatenate&lt;list&lt;Ts...&gt;, list&lt;Us...&gt;, list&lt;Vs...&gt;&gt; -&gt; list&lt;Ts..., Us..., Vs...&gt;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">extern</span> undefined _concatenate;</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span> list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a><span class="co">// select: list&lt;T&gt; if true, list&lt;&gt; if false</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span></code></pre></div>
 <p>Canonicalization is now just a basic not-in-place quicksort-ish
 thing:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span><span class="co">/*empty*/</span><span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co">// a canonicalized T is just T</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things less than T</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="co">/*T*/</span>, <span class="co">//                        ~~~~~~~~~~~~~~~~</span></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things greater than T</span></span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span> <span class="co">//                                     ~~~~~~~~~~~~~~~~</span></span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span><span class="co">/*empty*/</span><span class="op">&gt;</span> <span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">// a canonicalized T is just T</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things less than T</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="co">/*T*/</span>, <span class="co">//                        ~~~~~~~~~~~~~~~~</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// canonicalized things greater than T</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span> <span class="co">//                                     ~~~~~~~~~~~~~~~~</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span></code></pre></div>
 <p>We now have
 <code class="sourceCode default">canonicalized&lt;Ts...&gt;</code> - but
 this still leaves <code class="sourceCode default">list</code> as a
 special type which we’d rather not expose to the user. Onto
 <code class="sourceCode default">apply_canonicalized</code>:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply_canonicalized <span class="op">=</span> apply<span class="op">&lt;</span>F, canonicalized<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply_canonicalized <span class="op">=</span> apply<span class="op">&lt;</span>F, canonicalized<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span></code></pre></div>
 <h2 data-number="11.1" id="full-code-listing-as-tested-and-implemented"><span class="header-section-number">11.1</span> Full code listing as tested
 and implemented<a href="#full-code-listing-as-tested-and-implemented" class="self-link"></a></h2>
 <p>Here for completeness, feel free to skip.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;compare&gt;</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;type_traits&gt;</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TYPE</span><span class="op">-</span>ORDER<span class="op">(</span>x,<span class="pp"> </span>y<span class="op">)</span><span class="pp"> </span>type_order_v<span class="op">&lt;</span>x,<span class="pp"> </span>y<span class="op">&gt;</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> X, <span class="kw">typename</span> Y<span class="op">&gt;</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v;</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span></span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _apply;</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="co">// some user-type</span></span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> value_t <span class="op">:</span> std<span class="op">::</span>integral_constant<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>x<span class="op">)</span>, x<span class="op">&gt;</span> <span class="op">{}</span>;</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
-<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> value_t<span class="op">&lt;</span>x<span class="op">&gt;</span> value_v<span class="op">{}</span>;</span>
-<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a><span class="co">// built-in</span></span>
-<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x, <span class="kw">auto</span> y<span class="op">&gt;</span></span>
-<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v<span class="op">&lt;</span>value_t<span class="op">&lt;</span>x<span class="op">&gt;</span>, value_t<span class="op">&lt;</span>y<span class="op">&gt;&gt;</span> <span class="op">=</span></span>
-<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>    x <span class="op">&lt;=&gt;</span> y;</span>
-<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> list <span class="op">{}</span>;</span>
-<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
-<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _concatenate;</span>
-<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
-<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
-<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
-<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
-<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
-<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
-<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
-<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span>
-<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
-<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
-<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
-<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
-<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
-<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
-<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span>,</span>
-<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
-<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span></span>
-<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span>
-<span id="cb24-69"><a href="#cb24-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-70"><a href="#cb24-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>std<span class="op">::</span>same_as<span class="op">&lt;</span>canonicalized<span class="op">&lt;</span>value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;</span>, list<span class="op">&lt;</span>value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;&gt;)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;compare&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;type_traits&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> undefined;</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TYPE</span><span class="op">-</span>ORDER<span class="op">(</span>x,<span class="pp"> </span>y<span class="op">)</span><span class="pp"> </span>type_order_v<span class="op">&lt;</span>x,<span class="pp"> </span>y<span class="op">&gt;</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> X, <span class="kw">typename</span> Y<span class="op">&gt;</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v;</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span>, <span class="kw">typename</span><span class="op">&gt;</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _apply;</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> L,</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>F<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _apply<span class="op">&lt;</span>F, L<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span> <span class="kw">typename</span> F, <span class="kw">typename</span> List<span class="op">&gt;</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> apply <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_apply<span class="op">&lt;</span>F, List<span class="op">&gt;)</span>;</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="co">// some user-type</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> value_t <span class="op">:</span> std<span class="op">::</span>integral_constant<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>x<span class="op">)</span>, x<span class="op">&gt;</span> <span class="op">{}</span>;</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x<span class="op">&gt;</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> value_t<span class="op">&lt;</span>x<span class="op">&gt;</span> value_v<span class="op">{}</span>;</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="co">// built-in</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> x, <span class="kw">auto</span> y<span class="op">&gt;</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">inline</span> std<span class="op">::</span>strong_ordering type_order_v<span class="op">&lt;</span>value_t<span class="op">&lt;</span>x<span class="op">&gt;</span>, value_t<span class="op">&lt;</span>y<span class="op">&gt;&gt;</span> <span class="op">=</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>    x <span class="op">&lt;=&gt;</span> y;</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> list <span class="op">{}</span>;</span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> undefined _concatenate;</span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;&gt;</span>;</span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts, <span class="kw">typename</span><span class="op">...</span> Us, <span class="kw">typename</span><span class="op">...</span> Lists<span class="op">&gt;</span></span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...</span>, Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;)</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>    _concatenate<span class="op">&lt;</span>list<span class="op">&lt;</span>Ts<span class="op">...&gt;</span>, list<span class="op">&lt;</span>Us<span class="op">...&gt;</span>, Lists<span class="op">...&gt;</span>;</span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> concatenate <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_concatenate<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _select;</span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _select<span class="op">&lt;</span><span class="kw">true</span>, T<span class="op">&gt;</span>;</span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> v, <span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> select <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_select<span class="op">&lt;</span>v, T<span class="op">&gt;)</span>;</span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...&gt;</span></span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> list<span class="op">&lt;&gt;</span> _canon;</span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> canonicalized <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>_canon<span class="op">&lt;</span>Ts<span class="op">...&gt;)</span>;</span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a>list<span class="op">&lt;</span>T<span class="op">&gt;</span> _canon<span class="op">&lt;</span>T<span class="op">&gt;</span>;</span>
+<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span><span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a>concatenate<span class="op">&lt;</span></span>
+<span id="cb25-64"><a href="#cb25-64" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...&gt;&gt;</span>,</span>
+<span id="cb25-65"><a href="#cb25-65" aria-hidden="true" tabindex="-1"></a>    list<span class="op">&lt;</span>T<span class="op">&gt;</span>,</span>
+<span id="cb25-66"><a href="#cb25-66" aria-hidden="true" tabindex="-1"></a>    apply<span class="op">&lt;</span>canonicalized, concatenate<span class="op">&lt;</span>select<span class="op">&lt;(</span>TYPE<span class="op">-</span>ORDER<span class="op">(</span>Ts, T<span class="op">)</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span>, Ts<span class="op">&gt;...</span> <span class="op">&gt;&gt;</span></span>
+<span id="cb25-67"><a href="#cb25-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">&gt;</span></span>
+<span id="cb25-68"><a href="#cb25-68" aria-hidden="true" tabindex="-1"></a>_canon<span class="op">&lt;</span>T, Ts<span class="op">...&gt;</span>;</span>
+<span id="cb25-69"><a href="#cb25-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-70"><a href="#cb25-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-71"><a href="#cb25-71" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>std<span class="op">::</span>same_as<span class="op">&lt;</span>canonicalized<span class="op">&lt;</span>value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;</span>, list<span class="op">&lt;</span>value_t<span class="op">&lt;-</span><span class="dv">1</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;</span>, value_t<span class="op">&lt;</span><span class="dv">1</span><span class="op">&gt;&gt;&gt;)</span>;</span></code></pre></div>
 <h1 data-number="12" id="appendix-c-__pretty_function__-instability"><span class="header-section-number">12</span> Appendix C:
 <code class="sourceCode default">__PRETTY_FUNCTION__</code>
 instability<a href="#appendix-c-__pretty_function__-instability" class="self-link"></a></h1>
 <p>This example is available at https://godbolt.org/z/ojb9TnE99 .</p>
 <p>Consider the following program, contributed by Barry Revzin:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;print&gt;</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E;</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>E<span class="op">&gt;</span> <span class="kw">struct</span> C;</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef DEFINED</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E <span class="op">{</span> hi, gašper <span class="op">}</span>;</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span></span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> show<span class="op">()</span> <span class="op">{</span></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="ot">__PRETTY_FUNCTION__</span><span class="op">)</span>;</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    show<span class="op">&lt;</span>C<span class="op">&lt;</span>E<span class="op">(</span><span class="dv">0</span><span class="op">)&gt;&gt;()</span>;</span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;print&gt;</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E;</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span>E<span class="op">&gt;</span> <span class="kw">struct</span> C;</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef DEFINED</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> E <span class="op">{</span> hi, gašper <span class="op">}</span>;</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> show<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="ot">__PRETTY_FUNCTION__</span><span class="op">)</span>;</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    show<span class="op">&lt;</span>C<span class="op">&lt;</span>E<span class="op">(</span><span class="dv">0</span><span class="op">)&gt;&gt;()</span>;</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>When compiled with
 <code class="sourceCode default">-std=c++23</code>, it yields the
 following output:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;(E)0&gt;]</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;(E)0&gt;]</span></code></pre></div>
 <p>However, with
 <code class="sourceCode default">-std=c++23 -DDEFINED</code>, it
 produces a different one:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;E::hi&gt;]</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>void show() [with T = C&lt;E::hi&gt;]</span></code></pre></div>
 <p>This makes external names of types incorporating enums as non-type
 template arguments have inconsistent between translation units.</p>
 <h1 data-number="13" id="appendix-d-proscons-slide-from-ewg-wroclaw"><span class="header-section-number">13</span> Appendix D: pros/cons slide from
@@ -1723,7 +1725,7 @@ of shorter tuple), atoms first, then names, then constants, then other
 transformation.</p>
 <h2 data-number="14.4" id="decl-scopes"><span class="header-section-number">14.4</span> decl-scopes<a href="#decl-scopes" class="self-link"></a></h2>
 <p>A sort-key for most entities is of the form</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) = (sort_key(decl-scope(x)), x-dependent-elements...)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sort_key(x) = (sort_key(decl-scope(x)), x-dependent-elements...)</span></code></pre></div>
 <p>This section deals with the decl-scope of an entity.</p>
 <p>To deal with anonymous types and templated entities like hidden
 friends, we have to observe more than just the namespace and class the
@@ -1766,38 +1768,38 @@ name.</p>
 <p>This section deals with namespaces and their sort-keys.</p>
 <h3 data-number="14.7.1" id="the-global-namespace"><span class="header-section-number">14.7.1</span> The global namespace<a href="#the-global-namespace" class="self-link"></a></h3>
 <p>Let <em>x</em> be the global namespace.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := ()</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, _global-namespace_)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := ()</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, _global-namespace_)</span></code></pre></div>
 <h3 data-number="14.7.2" id="named-namespaces"><span class="header-section-number">14.7.2</span> Named namespaces<a href="#named-namespaces" class="self-link"></a></h3>
 <p>Every namespace (except for the global namespace) has a parent
 namespace, which is its immediately enclosing namespace.</p>
 <p>let <em>x</em> be some named namespace with the simple-name
 “namespace_name”.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, &quot;namespace_name&quot;)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, &quot;namespace_name&quot;)</span></code></pre></div>
 <h3 data-number="14.7.3" id="the-anonymous-namespace"><span class="header-section-number">14.7.3</span> The anonymous namespace<a href="#the-anonymous-namespace" class="self-link"></a></h3>
 <p>The anonymous namespace sorts after all the other namespaces.</p>
 <p>Let <em>x</em> be some anonymous namespace, with parent namespace
 <code class="sourceCode default">parent_namespace</code>.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, _anonymous_)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>sort_scope(x) := sort_key(parent_namespace)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>sort_key(x) := (sort_scope(x), _namespace_, _anonymous_)</span></code></pre></div>
 <p>This is ok, as there is only one anonymous namespace per namespace
 per compilation unit.</p>
 <h3 data-number="14.7.4" id="namespace-examples"><span class="header-section-number">14.7.4</span> Namespace examples<a href="#namespace-examples" class="self-link"></a></h3>
-<div class="sourceCode" id="cb32"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>sort_key(::std::ranges) = (</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    (</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        ((), _namespace_, _global-namespace_), // sort_key(global-namespace)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        _namespace_, &quot;std&quot;</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    ), // sort_key(::std)</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    _namespace_, &quot;ranges&quot;</span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>sort_key(::std::ranges) = (</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    (</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        ((), _namespace_, _global-namespace_), // sort_key(global-namespace)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        _namespace_, &quot;std&quot;</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    ), // sort_key(::std)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    _namespace_, &quot;ranges&quot;</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
 <h2 data-number="14.8" id="cv-qualified-types"><span class="header-section-number">14.8</span> cv-qualified types<a href="#cv-qualified-types" class="self-link"></a></h2>
 <h3 data-number="14.8.1" id="qualifiers"><span class="header-section-number">14.8.1</span> Qualifiers<a href="#qualifiers" class="self-link"></a></h3>
 <p>Qualifiers are each assigned a score</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>&amp;: 1</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>&amp;&amp;: 2</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>const: 3</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>volatile: 6</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>&amp;: 1</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>&amp;&amp;: 2</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>const: 3</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>volatile: 6</span></code></pre></div>
 <p>and ordering lowest-first after summing them.</p>
 <p>Any implementation-defined qualifiers get a score that is 2x the
 largest score in the table; for instance
@@ -1806,24 +1808,24 @@ largest score in the table; for instance
 <p>Therefore, for an unqualified type
 <code class="sourceCode default">T</code>, the order of all possible
 qualified types would be:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>  T</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>  T <span class="op">&amp;</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>  T <span class="op">&amp;&amp;</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>  T <span class="kw">const</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>  T <span class="kw">const</span> <span class="op">&amp;</span></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>  T <span class="kw">const</span> <span class="op">&amp;&amp;</span></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>  T <span class="kw">volatile</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>  T <span class="kw">volatile</span> <span class="op">&amp;</span></span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>  T <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>  T <span class="kw">const</span> <span class="kw">volatile</span></span>
-<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;</span></span>
-<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>  T</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>  T <span class="op">&amp;</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>  T <span class="op">&amp;&amp;</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>  T <span class="kw">const</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>  T <span class="kw">const</span> <span class="op">&amp;</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>  T <span class="kw">const</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>  T <span class="kw">volatile</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>  T <span class="kw">volatile</span> <span class="op">&amp;</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>  T <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>  T <span class="kw">const</span> <span class="kw">volatile</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span> T <span class="kw">const</span> <span class="kw">volatile</span> <span class="op">&amp;&amp;</span></span></code></pre></div>
 <p>This is accomplished by putting the qualifier sequence into the tuple
 just after the typename.</p>
 <p>For a given type <code class="sourceCode default">T</code>, we
 define</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;) := const volatile &amp;</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;&amp;) := const volatile &amp;&amp;</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;) := const volatile &amp;</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>qualifier_sequence(T const volatile &amp;&amp;) := const volatile &amp;&amp;</span></code></pre></div>
 <p>so that we can put it into the
 <code class="sourceCode default">sort_key</code> tuple later.</p>
 <h3 data-number="14.8.2" id="scalar-types"><span class="header-section-number">14.8.2</span> Scalar Types<a href="#scalar-types" class="self-link"></a></h3>
@@ -1894,29 +1896,29 @@ documentation).</li>
 <p>Array types shall be ordered after scalar types but before class
 types.</p>
 <p>Given a non-array type <code class="sourceCode default">T</code></p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>sort_key(T[])  := (sort_key(T), [])</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>sort_key(T[n]) := (sort_key(T), [], n)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>sort_key(T[])  := (sort_key(T), [])</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>sort_key(T[n]) := (sort_key(T), [], n)</span></code></pre></div>
 <p>Multidimensional arrays, as an example:</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>sort_key(int[][n]) = (sort_key(int[]), [], n) = ((sort_key(int), []), [], n);</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>sort_key(int[][n]) = (sort_key(int[]), [], n) = ((sort_key(int), []), [], n);</span></code></pre></div>
 <p>Notice:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>sort_key(int[]) &lt; sort_key(int[2])</span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>sort_key(int[]) &lt; sort_key(int[2])</span></code></pre></div>
 <p>because the shorter tuple wins a tie.</p>
 <h3 data-number="14.8.4" id="expressions"><span class="header-section-number">14.8.4</span> Expressions<a href="#expressions" class="self-link"></a></h3>
 <p>Example (courtesy of Lénárd Szolnoki)</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>template &lt;auto x&gt;</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>struct S {};</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>template &lt;int x&gt;</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>void foo(S&lt;2*x&gt;) {}</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>inline constexpr auto a = &amp;foo&lt;0&gt;;</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>template &lt;int x&gt;</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>void foo(S&lt;x&gt;) {}</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>inline constexpr void (*b)(S&lt;0&gt;) = &amp;foo;</span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>inline constexpr auto x = TYPE-ORDER(S&lt;x&gt;, S&lt;y&gt;); // not equal</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>template &lt;auto x&gt;</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>struct S {};</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>template &lt;int x&gt;</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>void foo(S&lt;2*x&gt;) {}</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>inline constexpr auto a = &amp;foo&lt;0&gt;;</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>template &lt;int x&gt;</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>void foo(S&lt;x&gt;) {}</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>inline constexpr void (*b)(S&lt;0&gt;) = &amp;foo;</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>inline constexpr auto x = TYPE-ORDER(S&lt;x&gt;, S&lt;y&gt;); // not equal</span></code></pre></div>
 <p>We must therefore sort arbitrary expressions; I propose we avoid that
 by making such comparisons, should they occur, ill-formed, until we are
 forced to define them.</p>
@@ -1925,30 +1927,30 @@ forced to define them.</p>
 lexicographically numbered within its
 <code class="sourceCode default">sort_scope</code>.</p>
 <p>Example:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>template &lt;auto T&gt; C {};</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>static_assert(type_order_v&lt;</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        C&lt;[]{}&gt;, // lambda-key: (sort_key(static_assert), _type_, _anonymous_, 1)</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>        C&lt;[]{}&gt;  // lambda-key: (sort_key(static_assert), _type_, _anonymous_, 2)</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    &gt;</span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    == std::strong_order::less);</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>template &lt;auto T&gt; C {};</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>static_assert(type_order_v&lt;</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>        C&lt;[]{}&gt;, // lambda-key: (sort_key(static_assert), _type_, _anonymous_, 1)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        C&lt;[]{}&gt;  // lambda-key: (sort_key(static_assert), _type_, _anonymous_, 2)</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    &gt;</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>    == std::strong_order::less);</span></code></pre></div>
 <p>TODO: port stuff from bottom.</p>
 <h2 data-number="14.9" id="old-design-that-needs-to-be-revamped"><span class="header-section-number">14.9</span> Old design that needs to be
 revamped<a href="#old-design-that-needs-to-be-revamped" class="self-link"></a></h2>
 <h3 data-number="14.9.1" id="example-1-class-foo-is-declared-in-struct-bar"><span class="header-section-number">14.9.1</span> Example 1:
 <code class="sourceCode default">class foo</code> is declared in
 <code class="sourceCode default">struct bar</code>:<a href="#example-1-class-foo-is-declared-in-struct-bar" class="self-link"></a></h3>
-<div class="sourceCode" id="cb41"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> bar <span class="op">{</span> <span class="kw">class</span> foo; <span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb42"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>sort_key(foo) = (sort_key(bar), sort_key(foo)) = ((type, bar), (type, foo, ))</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> bar <span class="op">{</span> <span class="kw">class</span> foo; <span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sort_key(foo) = (sort_key(bar), sort_key(foo)) = ((type, bar), (type, foo, ))</span></code></pre></div>
 <p>This shall hold for any of the above named scopes.</p>
 <h3 data-number="14.9.2" id="example"><span class="header-section-number">14.9.2</span> Example:<a href="#example" class="self-link"></a></h3>
 <p>Given</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> baz <span class="op">{</span></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> j;</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> baz <span class="op">{</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> j;</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Then:</p>
 <ul>
 <li><code class="sourceCode default">sort_key(foo::bar::i)</code> is
@@ -2006,7 +2008,7 @@ template arguments.</p>
 <h4 data-number="14.12.1.1" id="simple-names"><span class="header-section-number">14.12.1.1</span> Simple Names<a href="#simple-names" class="self-link"></a></h4>
 <p>Most names are strings that are valid (atomic) identifiers. Those are
 just themselves:</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span> <span class="kw">struct</span> baz; <span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> foo<span class="op">::</span>bar <span class="op">{</span> <span class="kw">struct</span> baz; <span class="op">}</span></span></code></pre></div>
 <p><code class="sourceCode default">foo</code>,
 <code class="sourceCode default">bar</code> and
 <code class="sourceCode default">baz</code> are such atomic
@@ -2044,9 +2046,9 @@ counter being scoped to their decl-scope.</p>
 <p>Function declarations are scoped to the function itself.</p>
 <p>Consider a lambda that appears as a default argument of a function
 template:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>T x <span class="op">=</span> <span class="op">[]{</span> <span class="cf">return</span> T<span class="op">{</span><span class="dv">0</span><span class="op">}</span>; <span class="op">}())</span>;</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co">//           ^^^^^^^^^^^^^^^^^^ this one</span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>T x <span class="op">=</span> <span class="op">[]{</span> <span class="cf">return</span> T<span class="op">{</span><span class="dv">0</span><span class="op">}</span>; <span class="op">}())</span>;</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co">//           ^^^^^^^^^^^^^^^^^^ this one</span></span></code></pre></div>
 <p>The <em>key-tuple</em> for
 <code class="sourceCode default">f&lt;int&gt;</code> is:</p>
 <p><code class="sourceCode default">(function, (f, (type, int)), (type, void), ((type, int)))</code></p>
@@ -2063,18 +2065,18 @@ they are declared, then by declaration (lexical) order.</p>
 <code class="sourceCode default">(lambda, #)</code> where
 <code class="sourceCode default">#</code> is the count of other unnamed
 entities in the decl-scope.</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Banana <span class="op">{</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">int</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">void</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Banana</span></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Apple <span class="op">{</span></span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">float</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">int</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Apple</span></span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> j <span class="op">=</span> <span class="op">[]()</span> <span class="op">-&gt;</span> std<span class="op">::</span>string <span class="op">{}</span>; <span class="co">// 1st lambda instantiated in Apple</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Banana <span class="op">{</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">int</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">void</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Banana</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Apple <span class="op">{</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> i <span class="op">=</span> <span class="op">[](</span><span class="dt">float</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">int</span> <span class="op">{}</span>; <span class="co">// 0th lambda instantiated in Apple</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> j <span class="op">=</span> <span class="op">[]()</span> <span class="op">-&gt;</span> std<span class="op">::</span>string <span class="op">{}</span>; <span class="co">// 1st lambda instantiated in Apple</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>These would produce the following tuples:</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Banana::i)) = ((namespace, Banana), (type, (lambda, 0), ));</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::i))  = ((namespace, Apple), (type, (lambda, 0), ));</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::j))  = ((namespace, Apple), (type, (lambda, 1), ));</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Banana::i)) = ((namespace, Banana), (type, (lambda, 0), ));</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::i))  = ((namespace, Apple), (type, (lambda, 0), ));</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>sort_key(decltype(Apple::j))  = ((namespace, Apple), (type, (lambda, 1), ));</span></code></pre></div>
 <p>Note: the empty bit after the identifier is the empty qualifier
 pack.</p>
 <h5 data-number="14.12.1.2.4" id="unnamed-struct-and-union-types"><span class="header-section-number">14.12.1.2.4</span> Unnamed
@@ -2094,18 +2096,18 @@ is <code class="sourceCode default">(namespace, identifier)</code>.</p>
 namespace names at the same rank. A namespace comes before any of its
 subnamespaces.</p>
 <p>Example:</p>
-<div class="sourceCode" id="cb48"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer1 <span class="op">{</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> i;</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer2 <span class="op">{</span></span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner1 <span class="op">{</span></span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner2 <span class="op">{</span></span>
-<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer1 <span class="op">{</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> i;</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> outer2 <span class="op">{</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner1 <span class="op">{</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">namespace</span> inner2 <span class="op">{</span></span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> i;</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The order of the three structs w/ type
 <code class="sourceCode default">i</code> types shall be</p>
 <p><code class="sourceCode default">sort_key(outer1::i) &lt; sort_key(outer2::inner1::i) &lt; sort_key(outer2::inner2::i)</code>.</p>
@@ -2126,9 +2128,9 @@ Types<a href="#ordering-simple-class-types" class="self-link"></a></h4>
 <p>Class types shall be greater than scalar types.</p>
 <p>Since we cannot redeclare two types with the same name, class types
 shall be ordered alphabetically.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple <span class="op">{}</span>;</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Banana <span class="op">{}</span>;</span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot <span class="op">{}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple <span class="op">{}</span>;</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Banana <span class="op">{}</span>;</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot <span class="op">{}</span>;</span></code></pre></div>
 <p>Would be ordered as
 <code class="sourceCode default">Apple &lt; Banana &lt; Carrot</code></p>
 <p>As such, we define sort key as:</p>
@@ -2139,13 +2141,13 @@ shall be ordered alphabetically.</p>
 Parameters<a href="#non-type-template-parameters" class="self-link"></a></h4>
 <p>NTTPs shall first be ordered by their type, then their value.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> T<span class="op">&gt;</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> s <span class="op">{</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">decltype</span><span class="op">(</span>T<span class="op">)</span> i <span class="op">=</span> T;</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="dv">1</span><span class="bu">u</span><span class="op">&gt;</span> a;</span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">&gt;</span> b;</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">auto</span> T<span class="op">&gt;</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> s <span class="op">{</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">decltype</span><span class="op">(</span>T<span class="op">)</span> i <span class="op">=</span> T;</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="dv">1</span><span class="bu">u</span><span class="op">&gt;</span> a;</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>s<span class="op">&lt;</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">&gt;</span> b;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(s&lt;1u&gt;) = ((type, (s, sort_key(1u))))</code></p>
 <p>We can define sort_key of <code class="sourceCode default">1u</code>
 as: <code class="sourceCode default">sort_key(1u) = ( sort_key(decltype(1u)), 1)</code></p>
@@ -2154,16 +2156,16 @@ before <code class="sourceCode default">s&lt;1.0f&gt;</code>, as
 integral types come before floating point types.</p>
 <p>NTTPs of the same type shall be lexicographically ordered by their
 scalar subobjects. Meaning</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> F <span class="kw">final</span> <span class="op">{</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> G <span class="kw">final</span> <span class="op">{</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> h;</span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i;</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span> g;</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> j;</span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>F f<span class="op">{{</span><span class="dv">0</span>,<span class="dv">1</span><span class="op">}</span>, <span class="dv">2</span><span class="op">}</span>;</span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>F f2<span class="op">{{</span><span class="dv">1</span>,<span class="dv">2</span><span class="op">}</span>, <span class="dv">3</span><span class="op">}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> F <span class="kw">final</span> <span class="op">{</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">struct</span> G <span class="kw">final</span> <span class="op">{</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> h;</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i;</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span> g;</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> j;</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>F f<span class="op">{{</span><span class="dv">0</span>,<span class="dv">1</span><span class="op">}</span>, <span class="dv">2</span><span class="op">}</span>;</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>F f2<span class="op">{{</span><span class="dv">1</span>,<span class="dv">2</span><span class="op">}</span>, <span class="dv">3</span><span class="op">}</span>;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(s&lt;f&gt;) &lt; sort_key(s&lt;f2&gt;)</code>;</p>
 <p>NTTPs of the same pointer or reference type shall be ordered by
 instantiation order.</p>
@@ -2175,15 +2177,15 @@ Specializations<a href="#ordering-class-template-specializations" class="self-li
 <li>Template arguments, applied lexicographically.</li>
 </ol>
 <p>For example, given:</p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple;</span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Banana;</span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot;</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Carrot<span class="op">&gt;</span>;</span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Apple;</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Banana;</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Carrot;</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Carrot<span class="op">&gt;</span>;</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Banana, Banana<span class="op">&gt;</span>;</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>Apple<span class="op">&lt;</span>Carrot, Carrot<span class="op">&gt;</span>;</span></code></pre></div>
 <p>Note,
 <code class="sourceCode default">sort_key(&lt;parameter&gt;)...</code>
 will be used to denote a tuple where
@@ -2213,10 +2215,10 @@ pack.</p>
 <p>The <code class="sourceCode default">sort_key</code> of a function
 shall be defined as:</p>
 <p><code class="sourceCode default">sort_key(&lt;function&gt;) = (function, &lt;name&gt;, (sort_key(&lt;parameter&gt;)...), sort_key(&lt;return type&gt;))</code></p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span> i<span class="op">)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span> i<span class="op">)</span>;</span></code></pre></div>
 <p>This function can be represented by: <code class="sourceCode default">(function, (foo, (type, void), ((type, int))))</code></p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span><span class="op">)</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span>, <span class="dt">double</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span><span class="op">)</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span><span class="dt">int</span>, <span class="dt">double</span><span class="op">)</span></span></code></pre></div>
 <p><code class="sourceCode default">sort_key(void foo(int)) = (function, foo, (type, void), ((type, int)))</code></p>
 <p><code class="sourceCode default">sort_key(void foo(int, double)) = (function, foo, (type, void), ((type, int), (type, double)))</code></p>
 <p>So, the type of <code class="sourceCode default">void foo(int)</code>
@@ -2232,9 +2234,9 @@ would precede the type of
 <p>The sort key of a member function shall be defined as:</p>
 <p><code class="sourceCode default">sort_key(&lt;member function&gt;) =</code></p>
 <p><code class="sourceCode default">(function, (&lt;name&gt;, sort_key(&lt;class&gt;)), sort_key(&lt;return type&gt;), (sort_key(&lt;parameter&gt;)...))))</code></p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> bar<span class="op">(</span><span class="dt">int</span> i, <span class="dt">float</span> j<span class="op">)</span>;</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> bar<span class="op">(</span><span class="dt">int</span> i, <span class="dt">float</span> j<span class="op">)</span>;</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(Foo::bar) =</code></p>
 <p><code class="sourceCode default">(type, Foo, ), (function, (bar, (type, Foo, )), (type, void), ((type, int, ), (type, float, ))))</code></p>
 <h4 data-number="14.12.4.6" id="variadic-function-types"><span class="header-section-number">14.12.4.6</span> Variadic Function Types<a href="#variadic-function-types" class="self-link"></a></h4>
@@ -2242,8 +2244,8 @@ would precede the type of
 function, the last argument is a variadic argument. A variadic argument
 shall be ordered immediately after its underlying type.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">)</span>;</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">...)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">)</span>;</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">(</span>Foo<span class="op">...)</span>;</span></code></pre></div>
 <p>In this case, the type of
 <code class="sourceCode default">void foo(Foo...)</code> is ordered
 immediately after the type of
@@ -2254,17 +2256,17 @@ immediately after the type of
 <h4 data-number="14.12.4.7" id="parameter-packs"><span class="header-section-number">14.12.4.7</span> Parameter Packs<a href="#parameter-packs" class="self-link"></a></h4>
 <p>Parameter are ordered as class templates.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span><span class="op">...</span> Types<span class="op">&gt;</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Tuple <span class="op">{}</span>;</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">{}</span>;</span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Bar <span class="op">{}</span>;</span>
-<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;&gt;</span> t0;</span>
-<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> t1;</span>
-<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo<span class="op">&gt;</span> t2;</span>
-<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Bar<span class="op">&gt;</span> t3;</span>
-<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo, Bar<span class="op">&gt;</span> t4;</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span><span class="op">...</span> Types<span class="op">&gt;</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Tuple <span class="op">{}</span>;</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">{}</span>;</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Bar <span class="op">{}</span>;</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;&gt;</span> t0;</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> t1;</span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo<span class="op">&gt;</span> t2;</span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Bar<span class="op">&gt;</span> t3;</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>Tuple<span class="op">&lt;</span>Foo, Bar<span class="op">&gt;</span> t4;</span></code></pre></div>
 <p>would be ordered:
 <code class="sourceCode default">Tuple&lt;&gt;</code> &lt;
 <code class="sourceCode default">Tuple&lt;int&gt;</code> &lt;
@@ -2276,16 +2278,16 @@ Templates<a href="#ordering-class-templates" class="self-link"></a></h4>
 <p>Kinds of templates are ordered first by name, then by template
 arguments.</p>
 <p>Given:</p>
-<div class="sourceCode" id="cb58"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span><span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">class</span> Template<span class="op">&gt;</span></span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> two<span class="op">{}</span>;</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">struct</span> one<span class="op">{}</span>;</span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">struct</span> zero<span class="op">{}</span>;</span>
-<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>zero<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> value0;</span>
-<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>one<span class="op">&lt;</span>zero<span class="op">&gt;</span> value1;</span>
-<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>two<span class="op">&lt;</span>one<span class="op">&gt;</span> value2;</span></code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span><span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">class</span> Template<span class="op">&gt;</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> two<span class="op">{}</span>;</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">class</span><span class="op">&gt;</span> <span class="kw">struct</span> one<span class="op">{}</span>;</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span><span class="op">&gt;</span> <span class="kw">struct</span> zero<span class="op">{}</span>;</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>zero<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> value0;</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>one<span class="op">&lt;</span>zero<span class="op">&gt;</span> value1;</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>two<span class="op">&lt;</span>one<span class="op">&gt;</span> value2;</span></code></pre></div>
 <p>These are represented by tuples:</p>
 <p><code class="sourceCode default">sort_key(zero&lt;int&gt;) = (type, (zero, (type, int)))</code></p>
 <p><code class="sourceCode default">sort_key(one&lt;zero&gt;) = (type, (one, (class_template, zero))))</code></p>
@@ -2294,8 +2296,8 @@ arguments.</p>
 <p>Variable templates are ordered by name, then by template
 parameter.</p>
 <p><code class="sourceCode default">sort_key(&lt;variable_template&gt;) = (variable_template, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
-<div class="sourceCode" id="cb59"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F, <span class="kw">typename</span> S<span class="op">&gt;</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>pair<span class="op">&lt;</span>F, S<span class="op">&gt;</span> pair_one_two <span class="op">=</span> <span class="op">{</span><span class="dv">1</span>, <span class="dv">2</span><span class="op">}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F, <span class="kw">typename</span> S<span class="op">&gt;</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> std<span class="op">::</span>pair<span class="op">&lt;</span>F, S<span class="op">&gt;</span> pair_one_two <span class="op">=</span> <span class="op">{</span><span class="dv">1</span>, <span class="dv">2</span><span class="op">}</span>;</span></code></pre></div>
 <p>the type of
 <code class="sourceCode default">pair_one_two&lt;int, double&gt;</code>
 can be represented as:</p>
@@ -2304,16 +2306,16 @@ can be represented as:</p>
 <p>Alias templates are ordered alphabetically by name.</p>
 <p><code class="sourceCode default">sort_key(&lt;alias_template&gt;) = (alias_template, &lt;name&gt;)</code></p>
 <p>Given</p>
-<div class="sourceCode" id="cb60"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span> <span class="kw">class</span> T <span class="op">&gt;</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> remove_cvref_t <span class="op">=</span> <span class="kw">typename</span> remove_cvref<span class="op">&lt;</span>T<span class="op">&gt;::</span>type;</span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span> <span class="kw">class</span> T <span class="op">&gt;</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> remove_cvref_t <span class="op">=</span> <span class="kw">typename</span> remove_cvref<span class="op">&lt;</span>T<span class="op">&gt;::</span>type;</span></code></pre></div>
 <p><code class="sourceCode default">sort_key(remove_cvref_t) = (alias_template, remove_cvref_t)</code></p>
 <h4 data-number="14.12.4.11" id="concepts"><span class="header-section-number">14.12.4.11</span> Concepts<a href="#concepts" class="self-link"></a></h4>
 <p>Concepts are ordered in a similar manner to variable templates.</p>
 <p><code class="sourceCode default">sort_key(&lt;concept&gt;) = (concept, (&lt;name&gt;, (sort_key(&lt;template_parameter&gt;)...)))</code></p>
-<div class="sourceCode" id="cb61"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> F <span class="op">=</span> <span class="kw">decltype</span><span class="op">([](</span>T<span class="op">){})&gt;</span> </span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> f <span class="op">=</span> <span class="kw">requires</span> <span class="op">(</span>T i, F f <span class="op">=</span> <span class="op">[](</span>T<span class="op">){})</span> <span class="op">{</span></span>
-<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>f<span class="op">(</span>i<span class="op">)}</span> <span class="op">-&gt;</span> std<span class="op">::</span>convertible_to<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>;</span>
-<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T, <span class="kw">typename</span> F <span class="op">=</span> <span class="kw">decltype</span><span class="op">([](</span>T<span class="op">){})&gt;</span> </span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> f <span class="op">=</span> <span class="kw">requires</span> <span class="op">(</span>T i, F f <span class="op">=</span> <span class="op">[](</span>T<span class="op">){})</span> <span class="op">{</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>f<span class="op">(</span>i<span class="op">)}</span> <span class="op">-&gt;</span> std<span class="op">::</span>convertible_to<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>;</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
 <p>In order to order the type of the lambda declared in
 <code class="sourceCode default">concept f</code>,
 <code class="sourceCode default">concept f</code> must be comparable

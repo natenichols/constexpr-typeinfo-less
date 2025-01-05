@@ -1,7 +1,7 @@
 ---
 title: Standardized Constexpr Type Ordering
-document: P2830R7
-date: 2024-11-21
+document: D2830R8
+date: 2025-01-05
 audience: EWG
 author:
   - name: Nate Nichols
@@ -57,6 +57,10 @@ This paper is split into two parts:
     - wrote wording and relegated the sketch of the completely-defined order to a historical appendix
 6. Revision 6
     - added feature-test macro
+7. Revision 7
+    - more wording fixes.
+8. Revision 8
+    - Wording fixes from Jeff Garland on the lwg mailing list.
     
      
 # Motivation
@@ -522,10 +526,10 @@ Implementations must define `TYPE-ORDER(X, Y)` such that it is an ordering, that
 it is transitive and antisymmetric; that is
 
 - if `TYPE-ORDER(X, Y) == std::strong_ordering::less`, then 
-  `TYPE-ORDER(Y, X) == `std::strong_ordering::greater` and vice versa
-- if `TYPE-ORDER(X, Y) == std::strong_ordering::less` and `TYPE-ORDER(Y, Z) ==
-  std::strong_ordering::less`, then `TYPE-ORDER(X, Z)` is also
-  `std::strong_ordering::less`.
+  `TYPE-ORDER(Y, X) == std::strong_ordering::greater` and vice versa
+- if `TYPE-ORDER(X, Y) == std::strong_ordering::less` and
+  `TYPE-ORDER(Y, Z) == std::strong_ordering::less`,
+   then `TYPE-ORDER(X, Z)` is also `std::strong_ordering::less`.
 
 Implementations are encouraged, but not required to, make the order recursively-consistent. In other words:
 
@@ -580,6 +584,7 @@ In [compare.syn]{.sref}, add
 ::: add
 
 ```cpp
+// [compare.type] type ordering
 template <class T, class U>
 struct type_order : integral_constant<strong_ordering, @_see below_@> {};
 template <class T, class U>
@@ -598,40 +603,52 @@ There is an implementation-defined total ordering of all types _TYPE-ORDER_.
 The `type_order` class template and `type_order_v` variable template allow querying
 the relative positions of pairs of types within this total order.
 
-[1]{.pnum} For types _X_ and _Y_, the expression `@_TYPE-ORDER(X, Y)_@` is a
-constant expression [expr.const]{.sref} whose implementation-defined value is
+[1]{.pnum} For types _X_ and _Y_, the expression `@_TYPE-ORDER_(_X_, _Y_)@` is a
+constant expression ([expr.const]{.sref}) whose implementation-defined value is
 the value of an enumerator of `strong_ordering`, subject to the following
 constraints:
 
-- [1.1]{.pnum} `@_TYPE-ORDER(X, Y)_@` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
+- [1.1]{.pnum} `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
 - [1.2]{.pnum} otherwise,
-  - [1.2.1]{.pnum} `@_TYPE-ORDER(X, Y)_@` is `strong_ordering::less` if and only if `@_TYPE-ORDER(Y, X)_@` is `strong_ordering::greater` (_antisymmetry_)
+  - [1.2.1]{.pnum} `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is `strong_ordering::less` if and only if `@_TYPE-ORDER_@(@_Y_@, @_X_@)` is `strong_ordering::greater` (_antisymmetry_)
   - [1.2.2]{.pnum} for all types _Z_,
-    if both `@_TYPE-ORDER(X, Y)_@` and `@_TYPE-ORDER(Y, Z)_@` are `strong_ordering::less`,
-    then `@_TYPE-ORDER(X, Z)_@` is also `strong_ordering::less` (_transitivity_)
+    if both `@_TYPE-ORDER_@(@_X_@, @_Y_@)` and `@_TYPE-ORDER_@(@_Y_@, @_Z_@)` are `strong_ordering::less`,
+    then `@_TYPE-ORDER_@(@_X_@, @_Z_@)` is also `strong_ordering::less` (_transitivity_)
 
 [Note: `int`, `const int` and `int&` are different types -- end note]
 
-[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ (20.15.2) with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER(X, Y)_@>`.
+[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
+with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER(X, Y)_@>`.
+
+```cpp
+template <typename T, typename U>
+struct type_order : integral_constant<strong_ordering, @_TYPE-ORDER_@(T, U)> {};
+```
 
 [3]{.pnum} _Recommended practice_: The implementation is encouraged to do the equivalent of alphabetically comparing the linkage-names of the types to allow for consistency across translation units.
 
-[4]{.pnum} _Recommended practice_: The implementation is encouraged to choose an ordering with the following properties:
+[4]{.pnum} _Recommended practice_: The implementation is encouraged to choose
+a lexicographical order that is recursively self-consistent with respect to
+template argument lists. This is defined as having the following two properties:
 
-[4.1]{.pnum} (self-consistency, lexicographical order)
-Let _X_ and _Y_ be types, T a class template,
-_A_ = _T_<_a_~1~, ..., _a_~n~> and _B_ = _T_<_b_~1~, ..., _b_~n~> specializations of _T_,
-and _a_~k~ = _X_ and _b_~k~ = _Y_ for some _k_ be the first differing template
-argument between _A_ and _B_ (_a_~i~ = _b_~i~ for all _i_ < _k_).
-Then `@_TYPE-ORDER(X, Y)_@ == @_TYPE-ORDER(A, B)_@`.
-[Note: the order should be lexicographical on type template arguments, if possible for the implementation -- end note]
+- [4.1]{.pnum} _Order is lexicographical by template argument list_:
+Let `X` and `Y` be types,
+`T` a class template,
+`@_A_@ = T<@_a_~1~@, ..., @_a~n~_@>` and
+`@_B_@ = T<@_b_~1~@, ..., @_b~n~_@>` specializations of `T`, and
+`@_a~k~_@ = X` and
+`@_b~k~_@ = Y` for some _k_ be the first differing template arguments between `@_A_@` and `@_B_@`
+(that is, `@_a~i~_@ = @_b~i~_@` for all _i_ < _k_).
+Then `@_TYPE-ORDER_@(@_X_@, @_Y_@) == @_TYPE-ORDER_@(@_A_@, @_B_@)`.
 
-[4.2]{.pnum} (argument list consistency)
-Let `T` and `U` be class templates, _a~k~_ and _b~k~ be the first differing
-template arguments in the type-ids _A_ = _T<a~1~, ..., a_~n~>_ and _B_ = _T<b~1~, ..., b_~n~>_
-for some _k_, and let _C_ = _U<a~1~, ..., a_~n~>_ and _D_ = _U<b~1~, ..., b_~n~>_ be valid type-ids.
-Then `@_TYPE-ORDER_(_A_, _B_) == @_TYPE-ORDER_(_C_, _D_)_@`.
-[Note: template argument lists should impose the same order regardless of the template they apply to -- end note]
+- [4.2]{.pnum} _Argument lists induce a consistent order across class templates_
+Let `T` and `U` be class templates,
+`@_a~k~_@` and `@_b~k~_@` be the first differing template arguments in the type-ids
+`@_A_@ = T<@_a_~1~@, ..., @_a~n~_@>` and 
+`@_B_@ = T<@_b_~1~@, ..., @_b~n~_@>` for some _k_, and let 
+`@_C_@ = U<@_a_~1~@, ..., @_a~n~_@>` and
+`@_D_@ = U<@_b_~1~@, ..., @_b~n~_@>` be valid type-ids.
+Then `@_TYPE-ORDER_@(@_A_@, @_B_@) == @_TYPE-ORDER_@(@_C_@, @_D_@)`.
 
 :::
 
@@ -639,7 +656,9 @@ Add feature-test macro into [version.syn]{.sref} in section 2
 
 :::add
 
-#define __cpp_lib_type_order 2024XXL // also in <compare>
+```
+#define __cpp_lib_type_order 2025XXL // also in <compare>
+```
 
 :::
 
@@ -647,7 +666,7 @@ Add feature-test macro into [version.syn]{.sref} in section 2
 
 - I'd like to thank Lewis Baker and Davis Herring for reminding me that I should probably make an introductory paragraph.
 - Davis Herring suggested adding a note to remind readers that `int`, `const int` and `int&` are different types.
-- 
+- Jeff Garland for his wording fix suggestions
 
 # FAQ
 
