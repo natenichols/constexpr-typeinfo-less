@@ -1,8 +1,8 @@
 ---
 title: Standardized Constexpr Type Ordering
 document: D2830R8
-date: 2025-01-05
-audience: EWG
+date: 2025-01-07
+audience: LWG
 author:
   - name: Nate Nichols
     email: <natenichols@cox.net>
@@ -60,7 +60,7 @@ This paper is split into two parts:
 7. Revision 7
     - more wording fixes.
 8. Revision 8
-    - Wording fixes from Jeff Garland on the lwg mailing list.
+    - Wording fixes from Jeff Garland, Jens Maurer and Tim Song on the lwg mailing list.
     
      
 # Motivation
@@ -586,7 +586,7 @@ In [compare.syn]{.sref}, add
 ```cpp
 // [compare.type] type ordering
 template <class T, class U>
-struct type_order : integral_constant<strong_ordering, @_see below_@> {};
+struct type_order;
 template <class T, class U>
 constexpr strong_ordering type_order_v = type_order<T, U>::value;
 ```
@@ -599,60 +599,67 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 
 **17.11.7: Type Ordering** [compare.type]
 
-There is an implementation-defined total ordering of all types _TYPE-ORDER_.
+There is an implementation-defined total ordering of all types.
 The `type_order` class template and `type_order_v` variable template allow querying
 the relative positions of pairs of types within this total order.
 
-[1]{.pnum} For types _X_ and _Y_, the expression `@_TYPE-ORDER_(_X_, _Y_)@` is a
-constant expression ([expr.const]{.sref}) whose implementation-defined value is
-the value of an enumerator of `strong_ordering`, subject to the following
-constraints:
+```cpp
+// [compare.type] type ordering
+template <class T, class U>
+struct type_order;
+template <class T, class U>
+constexpr strong_ordering type_order_v = type_order<T, U>::value;
+```
 
-- [1.1]{.pnum} `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is `strong_ordering::equal` if and only if _X_ and _Y_ are the same type
-- [1.2]{.pnum} otherwise,
-  - [1.2.1]{.pnum} `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is `strong_ordering::less` if and only if `@_TYPE-ORDER_@(@_Y_@, @_X_@)` is `strong_ordering::greater` (_antisymmetry_)
-  - [1.2.2]{.pnum} for all types _Z_,
-    if both `@_TYPE-ORDER_@(@_X_@, @_Y_@)` and `@_TYPE-ORDER_@(@_Y_@, @_Z_@)` are `strong_ordering::less`,
-    then `@_TYPE-ORDER_@(@_X_@, @_Z_@)` is also `strong_ordering::less` (_transitivity_)
+[1]{.pnum} For any (possibly incomplete) types `@_X_@` and `@_Y_@`,
+the expression `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is a constant expression ([expr.const]{.sref})
+of type `strong_ordering` ([cmp.strongord]{.sref}).
+
+Its value is `strong_ordering::less` if `@_X_@` precedes `@_Y_@` in this
+implementation-defined total order, `strong_ordering::greater` if `@_Y_@` precedes `@_X_@`,
+and `strong_ordering::equal` if they are the same type.
 
 [Note: `int`, `const int` and `int&` are different types -- end note]
 
 [2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
-with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER(X, Y)_@>`.
+with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER_@(@_X_@, @_Y_@)>`.
 
-```cpp
-template <typename T, typename U>
-struct type_order : integral_constant<strong_ordering, @_TYPE-ORDER_@(T, U)> {};
-```
+[3]{.pnum} _Recommended practice_: The implementation should choose
+an order that is lexicographical on function parameter lists and 
+template argument lists.
+This is defined as having the following two properties:
 
-[3]{.pnum} _Recommended practice_: The implementation is encouraged to do the equivalent of alphabetically comparing the linkage-names of the types to allow for consistency across translation units.
+- [3.1]{.pnum} _The order is lexicographical by template argument list_:
+    Let `T` be a class template,
+    `T<@_a_@...>` and `T<@_b_@...>` be _simple-template-id_\ s for some
+    template argument lists `@_a_@...` and `@_b_@...`,
+    and let _k_ be the lowest index where their elements `@_a~k~_@` and `@_b~k~_@` differ
+    (that is, `@_a~i~_@` equals `@_b~i~_@` for all _i_ < _k_).
+    If they are types, then `@_TYPE-ORDER_@(T<@_a_@...>, T<@_b_@...>)` should equal `@_TYPE-ORDER_@(@_a~k~_@, @_b~k~_@)`.
+    If there is no such `k`, then the type with the shorter list should precede the other in the order.
 
-[4]{.pnum} _Recommended practice_: The implementation is encouraged to choose
-a lexicographical order that is recursively self-consistent with respect to
-template argument lists. This is defined as having the following two properties:
+- [3.1]{.pnum} _The order is lexicographical by function parameter list_:
+    Let `@_T_@(@_A_@...)` and `@_T_@(@_B_@...)` be function types for some type `@_T_@`
+    and some function parameter type lists `@_A_@...` and `@_B_@...`,
+    and let _k_ be the lowest index where their elements `@_A~k~_@` and `@_B~k~_@` differ
+    (that is, `@_A~i~_@` equals `@_B~i~_@` for all _i_ < _k_).
+    Then `@_TYPE-ORDER_@(@_T_@(@_A_@...), @_U_@(@_B_@...))` should equal `@_TYPE-ORDER_@(@_A~k~_@, @_B~k~_@)`.
+    If there is no such `k`, then the type with the shorter list should precede the other in the order.
 
-- [4.1]{.pnum} _Order is lexicographical by template argument list_:
-Let `X` and `Y` be types,
-`T` a class template,
-`@_A_@ = T<@_a_~1~@, ..., @_a~n~_@>` and
-`@_B_@ = T<@_b_~1~@, ..., @_b~n~_@>` specializations of `T`, and
-`@_a~k~_@ = X` and
-`@_b~k~_@ = Y` for some _k_ be the first differing template arguments between `@_A_@` and `@_B_@`
-(that is, `@_a~i~_@ = @_b~i~_@` for all _i_ < _k_).
-Then `@_TYPE-ORDER_@(@_X_@, @_Y_@) == @_TYPE-ORDER_@(@_A_@, @_B_@)`.
-
-- [4.2]{.pnum} _Argument lists induce a consistent order across class templates_
-Let `T` and `U` be class templates,
-`@_a~k~_@` and `@_b~k~_@` be the first differing template arguments in the type-ids
-`@_A_@ = T<@_a_~1~@, ..., @_a~n~_@>` and 
-`@_B_@ = T<@_b_~1~@, ..., @_b~n~_@>` for some _k_, and let 
-`@_C_@ = U<@_a_~1~@, ..., @_a~n~_@>` and
-`@_D_@ = U<@_b_~1~@, ..., @_b~n~_@>` be valid type-ids.
-Then `@_TYPE-ORDER_@(@_A_@, @_B_@) == @_TYPE-ORDER_@(@_C_@, @_D_@)`.
+[Note: Using the linker symbol name of an exposition-only specialization of a
+variable template `template <class T> int sort_key;` as a sort-key for a given `T`
+(`template <> int sort_key<T>`) is intended to be a conforming implementation
+of this total order. -- end note]
 
 :::
 
-Add feature-test macro into [version.syn]{.sref} in section 2
+Design note: the reason we do not state a recommended practice of what to
+do with function return types is to allow doing _whatever the mangling does_,
+which for the itanium ABI means _sort by return type first, and then by
+function parameter list_. It is feasible for there to be a mangling that would
+put the return type last.
+
+Add a feature-test macro into [version.syn]{.sref} in section 2
 
 :::add
 
@@ -666,7 +673,7 @@ Add feature-test macro into [version.syn]{.sref} in section 2
 
 - I'd like to thank Lewis Baker and Davis Herring for reminding me that I should probably make an introductory paragraph.
 - Davis Herring suggested adding a note to remind readers that `int`, `const int` and `int&` are different types.
-- Jeff Garland for his wording fix suggestions
+- Jeff Garland, Tim Song and Jens Maurer for their wording fixes and suggestions.
 
 # FAQ
 
