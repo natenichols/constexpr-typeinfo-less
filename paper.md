@@ -60,7 +60,7 @@ This paper is split into two parts:
 7. Revision 7
     - more wording fixes.
 8. Revision 8
-    - Wording fixes from Jeff Garland, Jens Maurer and Tim Song on the lwg mailing list.
+    - Wording fixes from Jeff Garland, Jens Maurer, Tomasz Kamiński and Tim Song on the lwg mailing list.
     
      
 # Motivation
@@ -603,14 +603,6 @@ There is an implementation-defined total ordering of all types.
 The `type_order` class template and `type_order_v` variable template allow querying
 the relative positions of pairs of types within this total order.
 
-```cpp
-// [compare.type] type ordering
-template <class T, class U>
-struct type_order;
-template <class T, class U>
-constexpr strong_ordering type_order_v = type_order<T, U>::value;
-```
-
 [1]{.pnum} For any (possibly incomplete) types `@_X_@` and `@_Y_@`,
 the expression `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is a constant expression ([expr.const]{.sref})
 of type `strong_ordering` ([cmp.strongord]{.sref}).
@@ -621,35 +613,20 @@ and `strong_ordering::equal` if they are the same type.
 
 [Note: `int`, `const int` and `int&` are different types -- end note]
 
+```cpp
+// [compare.type] type ordering
+template <class T, class U>
+struct type_order;
+template <class T, class U>
+constexpr strong_ordering type_order_v = type_order<T, U>::value;
+```
+
 [2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
 with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER_@(@_X_@, @_Y_@)>`.
 
 [3]{.pnum} _Recommended practice_: The implementation should choose
-an order that is lexicographical on function parameter lists and 
+an order that is lexicographical on *parameter-type-list*s and 
 template argument lists.
-This is defined as having the following two properties:
-
-- [3.1]{.pnum} _The order is lexicographical by template argument list_:
-    Let `T` be a class template,
-    `T<@_a_@...>` and `T<@_b_@...>` be _simple-template-id_\ s for some
-    template argument lists `@_a_@...` and `@_b_@...`,
-    and let _k_ be the lowest index where their elements `@_a~k~_@` and `@_b~k~_@` differ
-    (that is, `@_a~i~_@` equals `@_b~i~_@` for all _i_ < _k_).
-    If they are types, then `@_TYPE-ORDER_@(T<@_a_@...>, T<@_b_@...>)` should equal `@_TYPE-ORDER_@(@_a~k~_@, @_b~k~_@)`.
-    If there is no such `k`, then the type with the shorter list should precede the other in the order.
-
-- [3.1]{.pnum} _The order is lexicographical by function parameter list_:
-    Let `@_T_@(@_A_@...)` and `@_T_@(@_B_@...)` be function types for some type `@_T_@`
-    and some function parameter type lists `@_A_@...` and `@_B_@...`,
-    and let _k_ be the lowest index where their elements `@_A~k~_@` and `@_B~k~_@` differ
-    (that is, `@_A~i~_@` equals `@_B~i~_@` for all _i_ < _k_).
-    Then `@_TYPE-ORDER_@(@_T_@(@_A_@...), @_U_@(@_B_@...))` should equal `@_TYPE-ORDER_@(@_A~k~_@, @_B~k~_@)`.
-    If there is no such `k`, then the type with the shorter list should precede the other in the order.
-
-[Note: Using the linker symbol name of an exposition-only specialization of a
-variable template `template <class T> int sort_key;` as a sort-key for a given `T`
-(`template <> int sort_key<T>`) is intended to be a conforming implementation
-of this total order. -- end note]
 
 :::
 
@@ -673,7 +650,7 @@ Add a feature-test macro into [version.syn]{.sref} in section 2
 
 - I'd like to thank Lewis Baker and Davis Herring for reminding me that I should probably make an introductory paragraph.
 - Davis Herring suggested adding a note to remind readers that `int`, `const int` and `int&` are different types.
-- Jeff Garland, Tim Song and Jens Maurer for their wording fixes and suggestions.
+- Jeff Garland, Tim Song, Tomasz Kamiński and Jens Maurer for their wording fixes and suggestions.
 
 # FAQ
 
