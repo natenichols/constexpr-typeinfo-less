@@ -583,13 +583,14 @@ In [compare.syn]{.sref}, add
 
 ::: add
 
-```cpp
-// [compare.type] type ordering
-template <class T, class U>
-struct type_order;
-template <class T, class U>
-constexpr strong_ordering type_order_v = type_order<T, U>::value;
-```
+> ```cpp
+> // [compare.type] type ordering
+> template <class T, class U>
+> struct type_order;
+> template <class T, class U>
+> constexpr strong_ordering type_order_v = type_order<T, U>::value;
+> ```
+<!--`buggy editor-->
 
 :::
 
@@ -597,52 +598,42 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 
 :::add
 
-**17.11.7: Type Ordering** [compare.type]
-
-There is an implementation-defined total ordering of all types.
-The `type_order` class template and `type_order_v` variable template allow querying
-the relative positions of pairs of types within this total order.
-
-[1]{.pnum} For any (possibly incomplete) types `@_X_@` and `@_Y_@`,
-the expression `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is a constant expression ([expr.const]{.sref})
-of type `strong_ordering` ([cmp.strongord]{.sref}).
-
-Its value is `strong_ordering::less` if `@_X_@` precedes `@_Y_@` in this
-implementation-defined total order, `strong_ordering::greater` if `@_Y_@` precedes `@_X_@`,
-and `strong_ordering::equal` if they are the same type.
-
-[Note: `int`, `const int` and `int&` are different types -- end note]
-
-```cpp
-// [compare.type] type ordering
-template <class T, class U>
-struct type_order;
-template <class T, class U>
-constexpr strong_ordering type_order_v = type_order<T, U>::value;
-```
-
-[2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
-with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER_@(@_X_@, @_Y_@)>`.
-
-[3]{.pnum} _Recommended practice_: The implementation should choose
-an order that is lexicographical on *parameter-type-list*s and 
-template argument lists.
+> **17.11.7: Type Ordering** [compare.type]
+>
+> [1]{.pnum} There is an implementation-defined total ordering of all types.
+> For any (possibly incomplete) types `@_X_@` and `@_Y_@`,
+> the expression `@_TYPE-ORDER_@(@_X_@, @_Y_@)` is a constant expression ([expr.const]{.sref})
+> of type `strong_ordering` ([cmp.strongord]{.sref}).
+> Its value is `strong_ordering::less` if `@_X_@` precedes `@_Y_@` in this
+> implementation-defined total order, `strong_ordering::greater` if `@_Y_@` precedes `@_X_@`,
+> and `strong_ordering::equal` if they are the same type.
+> 
+> [Note: `int`, `const int` and `int&` are different types -- end note]
+> 
+> ```cpp
+> // [compare.type] type ordering
+> template <class T, class U>
+> struct type_order;
+> ```
+> <!--` buggy editor-->
+> 
+> [2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
+> with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER_@(@_X_@, @_Y_@)>`.
+> 
+> [3]{.pnum} _Recommended practice_: The implementation should choose
+> an order that is lexicographical on parameter-type-lists and 
+> template argument lists.
 
 :::
-
-Design note: the reason we do not state a recommended practice of what to
-do with function return types is to allow doing _whatever the mangling does_,
-which for the itanium ABI means _sort by return type first, and then by
-function parameter list_. It is feasible for there to be a mangling that would
-put the return type last.
 
 Add a feature-test macro into [version.syn]{.sref} in section 2
 
 :::add
 
-```
-#define __cpp_lib_type_order 2025XXL // also in <compare>
-```
+> ```
+> #define __cpp_lib_type_order 2025XXL // also in <compare>
+> ```
+<!--` buggy editor -->
 
 :::
 
@@ -651,6 +642,13 @@ Add a feature-test macro into [version.syn]{.sref} in section 2
 - I'd like to thank Lewis Baker and Davis Herring for reminding me that I should probably make an introductory paragraph.
 - Davis Herring suggested adding a note to remind readers that `int`, `const int` and `int&` are different types.
 - Jeff Garland, Tim Song, Tomasz Kamiński and Jens Maurer for their wording fixes and suggestions.
+
+Design note: the reason we do not state a recommended practice of what to
+do with function return types is to allow doing _whatever the mangling does_,
+which for the itanium ABI means _sort by return type first, and then by
+function parameter list_. It is feasible for there to be a mangling that would
+put the return type last.
+
 
 # FAQ
 
