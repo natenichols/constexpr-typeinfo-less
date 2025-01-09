@@ -1,7 +1,7 @@
 ---
 title: Standardized Constexpr Type Ordering
-document: D2830R8
-date: 2025-01-07
+document: P2830R8
+date: 2025-01-09
 audience: LWG
 author:
   - name: Nate Nichols
