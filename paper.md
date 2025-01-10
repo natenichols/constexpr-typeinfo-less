@@ -1,7 +1,7 @@
 ---
 title: Standardized Constexpr Type Ordering
-document: P2830R8
-date: 2025-01-09
+document: P2830R9
+date: 2025-01-10
 audience: LWG
 author:
   - name: Nate Nichols
@@ -61,6 +61,8 @@ This paper is split into two parts:
     - more wording fixes.
 8. Revision 8
     - Wording fixes from Jeff Garland, Jens Maurer, Tomasz Kamiński and Tim Song on the lwg mailing list.
+9. Revision 9
+    - Editorial wording fixes from LWG review.
     
      
 # Motivation
@@ -608,10 +610,9 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 > implementation-defined total order, `strong_ordering::greater` if `@_Y_@` precedes `@_X_@`,
 > and `strong_ordering::equal` if they are the same type.
 > 
-> [Note: `int`, `const int` and `int&` are different types -- end note]
+> [Note: `int`, `const int` and `int&` are different types. -- end note]
 > 
 > ```cpp
-> // [compare.type] type ordering
 > template <class T, class U>
 > struct type_order;
 > ```
@@ -620,9 +621,8 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 > [2]{.pnum} The name `type_order` denotes a _Cpp17BinaryTypeTrait_ ([meta.rqmts]{.sref})
 > with a base characteristic of `integral_constant<strong_ordering, @_TYPE-ORDER_@(@_X_@, @_Y_@)>`.
 > 
-> [3]{.pnum} _Recommended practice_: The implementation should choose
-> an order that is lexicographical on parameter-type-lists and 
-> template argument lists.
+> [3]{.pnum} _Recommended practice_: The order should be lexicographical on
+> parameter-type-lists and template argument lists.
 
 :::
 
