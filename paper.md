@@ -613,7 +613,9 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 > and `strong_ordering::equal` if they are the same type.
 > 
 > [Note 1: `int`, `const int` and `int&` are different types. -- end note]
+>
 > [Note 2: This ordering need not be consistent with the one induced by `type_info::before`. -- end note]
+>
 > [Note 3: The ordering of TU-local types from different translation units is
 > not observable, because the necessary specialization of `type_order` is impossible to name.
 > -- end note]

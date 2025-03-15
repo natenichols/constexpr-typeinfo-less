@@ -1189,12 +1189,14 @@ are the same type.</p>
 <p>[Note 1: <code class="sourceCode default">int</code>,
 <code class="sourceCode default">const int</code> and
 <code class="sourceCode default">int&amp;</code> are different types. –
-end note] [Note 2: This ordering need not be consistent with the one
-induced by <code class="sourceCode default">type_info::before</code>. –
-end note] [Note 3: The ordering of TU-local types from different
-translation units is not observable, because the necessary
-specialization of <code class="sourceCode default">type_order</code> is
-impossible to name. – end note]</p>
+end note]</p>
+<p>[Note 2: This ordering need not be consistent with the one induced by
+<code class="sourceCode default">type_info::before</code>. – end
+note]</p>
+<p>[Note 3: The ordering of TU-local types from different translation
+units is not observable, because the necessary specialization of
+<code class="sourceCode default">type_order</code> is impossible to
+name. – end note]</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>template &lt;class T, class U&gt;</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>struct type_order;</span></code></pre></div>
 <!--` buggy editor-->
