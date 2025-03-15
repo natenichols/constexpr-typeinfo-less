@@ -1,8 +1,8 @@
 ---
-title: Standardized Constexpr Type Ordering
-document: P2830R9
-date: 2025-01-10
-audience: LWG
+title: Constexpr Type Ordering
+document: P2830R10
+date: 2025-02-21
+audience: CWG
 author:
   - name: Nate Nichols
     email: <natenichols@cox.net>
@@ -63,6 +63,8 @@ This paper is split into two parts:
     - Wording fixes from Jeff Garland, Jens Maurer, Tomasz Kamiński and Tim Song on the lwg mailing list.
 9. Revision 9
     - Editorial wording fixes from LWG review.
+10. Revision 10:
+    - Wording fixes from Hubert Tong.
     
      
 # Motivation
@@ -610,7 +612,11 @@ At the end of [cmp]{.sref}, just before [support.coroutine]{.sref}, add:
 > implementation-defined total order, `strong_ordering::greater` if `@_Y_@` precedes `@_X_@`,
 > and `strong_ordering::equal` if they are the same type.
 > 
-> [Note: `int`, `const int` and `int&` are different types. -- end note]
+> [Note 1: `int`, `const int` and `int&` are different types. -- end note]
+> [Note 2: This ordering need not be consistent with the one induced by `type_info::before`. -- end note]
+> [Note 3: The ordering of TU-local types from different translation units is
+> not observable, because the necessary specialization of `type_order` is impossible to name.
+> -- end note]
 > 
 > ```cpp
 > template <class T, class U>
@@ -717,6 +723,8 @@ Thanks to all of the following:
   - Peter Dimov for a helpful anecdote, now in the FAQ.
   - Erich Keane for for pushing us back to the "implementation-defined" territory.
   - Jens Maurer for his thorough review of the initial proposed wording and his guidance.
+  - Hubert Tong for ensuring the necessary reminders were added to the core
+    wording as opposed to remaining merely parts of the rationale.
 
 
 # Appendix A: Discarded syntax options
